@@ -1,0 +1,53 @@
+{
+  "name": "heimrichhannot/contao-isotope-subscriptions-bundle",
+  "type": "contao-bundle",
+  "description": "Enhancements for isotope shop",
+  "license": "LGPL-3.0-or-later",
+  "require": {
+    "php": "^7.1",
+    "contao/core-bundle": "^4.4",
+    "isotope/isotope-core": "*",
+    "symfony/framework-bundle": "^3.4",
+    "heimrichhannot/contao-utils-bundle": "^2.0",
+    "heimrichhannot/contao-member-bundle": "^1.0-beta",
+    "heimrichhannot/contao-exporter": "^4.2"
+  },
+  "minimum-stability": "beta",
+  "require-dev": {
+    "contao/test-case": "^1.1",
+    "contao/manager-plugin": "^2.0",
+    "friendsofphp/php-cs-fixer": "^2.2",
+    "phpunit/phpunit": "^6.5",
+    "phpunit/phpunit-mock-objects": "^4.0|^5.0",
+    "phpunit/php-token-stream": "^1.4|^2.0|^3.0",
+    "php-http/guzzle6-adapter": "^1.1",
+    "php-http/message-factory": "^1.0.2",
+    "satooshi/php-coveralls": "^2.0",
+    "symfony/phpunit-bridge": "^3.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "HeimrichHannot\\IsotopeSubscriptionsBundle\\": "src/"
+    },
+    "classmap": [
+      "src/"
+    ],
+    "exclude-from-classmap": [
+      "src/Resources/contao/config/",
+      "src/Resources/contao/dca/",
+      "src/Resources/contao/languages/",
+      "src/Resources/contao/templates/"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "HeimrichHannot\\IsotopeSubscriptionsBundle\\Test\\": "tests/"
+    }
+  },
+  "config": {
+    "preferred-install": "dist"
+  },
+  "extra": {
+    "contao-manager-plugin": "HeimrichHannot\\IsotopeSubscriptionsBundle\\ContaoManager\\Plugin"
+  }
+}

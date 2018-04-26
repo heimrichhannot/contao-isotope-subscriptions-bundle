@@ -1,0 +1,6 @@
+services:
+  huh.isotope_subscriptions.manager.subscriptions:
+    class: HeimrichHannot\IsotopeSubscriptionsBundle\Manager\IsotopeSubscriptions
+    public: true
+    arguments:
+      - "@contao.framework"
