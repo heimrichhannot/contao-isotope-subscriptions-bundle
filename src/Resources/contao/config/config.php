@@ -15,18 +15,18 @@
  * Frontend modules
  */
 $GLOBALS['FE_MOD']['isotope_subscriptions'] = [
-    'iso_activation'   => 'Isotope\Module\Activation',
-    'iso_cancellation' => 'Isotope\Module\Cancellation',
+    'iso_activation'   => 'HeimrichHannot\IsotopeSubscriptionsBundle\Module\Activation',
+    'iso_cancellation' => 'HeimrichHannot\IsotopeSubscriptionsBundle\Module\Cancellation',
 ];
 
 /**
  * Hooks
  */
-$GLOBALS['ISO_HOOKS']['preCheckout']['setCheckoutModuleIdSubscriptions']        = ['Isotope\IsotopeSubscriptions', 'setCheckoutModuleIdSubscriptions'];
-$GLOBALS['ISO_HOOKS']['preCheckout']['checkForExistingSubscription']            = ['Isotope\IsotopeSubscriptions', 'checkForExistingSubscription'];
-$GLOBALS['ISO_HOOKS']['postCheckout']['addSubscriptions']                       = ['Isotope\IsotopeSubscriptions', 'addSubscriptions'];
-$GLOBALS['TL_HOOKS']['preLoginRegistration']['checkUsernameForIsoSubscription'] = ['Isotope\IsotopeSubscriptions', 'checkUsernameForIsoSubscription'];
-$GLOBALS['TL_HOOKS']['preRegistration']['checkUsernameForIsoSubscription']      = ['Isotope\IsotopeSubscriptions', 'checkUsernameForIsoSubscription'];
+$GLOBALS['ISO_HOOKS']['preCheckout']['setCheckoutModuleIdSubscriptions']        = ['huh.isotope_subscriptions.manager.subscriptions', 'setCheckoutModuleIdSubscriptions'];
+$GLOBALS['ISO_HOOKS']['preCheckout']['checkForExistingSubscription']            = ['huh.isotope_subscriptions.manager.subscriptions', 'checkForExistingSubscription'];
+$GLOBALS['ISO_HOOKS']['postCheckout']['addSubscriptions']                       = ['huh.isotope_subscriptions.manager.subscriptions', 'addSubscriptions'];
+$GLOBALS['TL_HOOKS']['preLoginRegistration']['checkUsernameForIsoSubscription'] = ['huh.isotope_subscriptions.manager.subscriptions', 'checkUsernameForIsoSubscription'];
+$GLOBALS['TL_HOOKS']['preRegistration']['checkUsernameForIsoSubscription']      = ['huh.isotope_subscriptions.manager.subscriptions', 'checkUsernameForIsoSubscription'];
 
 /**
  * Notification center notification types
@@ -39,8 +39,8 @@ $arrNotifications['iso_subscription_activation']['email_text'][] = 'link';
 /**
  * Models
  */
-$GLOBALS['TL_MODELS'][\Isotope\Model\Subscription::getTable()]        = 'Isotope\Model\Subscription';
-$GLOBALS['TL_MODELS'][\Isotope\Model\SubscriptionArchive::getTable()] = 'Isotope\Model\SubscriptionArchive';
+$GLOBALS['TL_MODELS'][HeimrichHannot\IsotopeSubscriptionsBundle\Model\Subscription::getTable()]        = 'HeimrichHannot\IsotopeSubscriptionsBundle\Model\Subscription';
+$GLOBALS['TL_MODELS'][HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchive::getTable()] = 'HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchive';
 
 
 /**

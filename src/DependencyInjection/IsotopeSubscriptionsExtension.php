@@ -17,7 +17,7 @@ class IsotopeSubscriptionsExtension extends Extension
 {
     public function getAlias()
     {
-        return 'huh_isotope';
+        return 'huh_isotope_subscription';
     }
 
     /**
