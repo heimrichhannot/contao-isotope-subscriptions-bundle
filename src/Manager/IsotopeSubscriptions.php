@@ -37,9 +37,10 @@ class IsotopeSubscriptions
     }
 
     /**
+     * @param Order  $oder
      * @param Module $module
      */
-    public function setCheckoutModuleIdSubscriptions(Module $module)
+    public function setCheckoutModuleIdSubscriptions(Order $oder, Module $module)
     {
         System::getContainer()->get('session')->set('isotopeCheckoutModuleIdSubscriptions', $module->id);
     }
