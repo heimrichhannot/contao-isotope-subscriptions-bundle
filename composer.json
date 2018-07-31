@@ -6,11 +6,11 @@
   "require": {
     "php": "^7.1",
     "contao/core-bundle": "^4.4",
-    "isotope/isotope-core": "*",
+    "isotope/isotope-core": "^2.4",
     "symfony/framework-bundle": "^3.4",
     "heimrichhannot/contao-utils-bundle": "^2.0",
     "heimrichhannot/contao-member-bundle": "^1.0-beta",
-    "heimrichhannot/contao-exporter": "^4.2"
+    "heimrichhannot/contao-exporter-bundle": "~0.3||^1.0"
   },
   "minimum-stability": "beta",
   "require-dev": {
