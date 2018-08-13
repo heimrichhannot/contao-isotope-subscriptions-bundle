@@ -23,7 +23,7 @@ $GLOBALS['TL_DCA']['tl_iso_subscription'] = [
             'child_record_callback' => ['tl_iso_subscription', 'listSubscriptions'],
         ],
         'global_operations' => [
-            'export_xls' => \HeimrichHannot\Exporter\ModuleExporter::getGlobalOperation('export_xls', $GLOBALS['TL_LANG']['MSC']['export_xls'], 'system/modules/exporter/assets/img/icon_export.png'),
+            'export_xls' => \Contao\System::getContainer()->get('huh.exporter.action.backendexport')->getGlobalOperation('export_xls', $GLOBALS['TL_LANG']['MSC']['export_xls'], 'system/modules/exporter/assets/img/icon_export.png'),
             'all'        => [
                 'label'      => &$GLOBALS['TL_LANG']['MSC']['all'],
                 'href'       => 'act=select',

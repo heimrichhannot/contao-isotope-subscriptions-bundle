@@ -7,7 +7,7 @@
     'iso_subscriptions' => [
         'tables'     => ['tl_iso_subscription_archive', 'tl_iso_subscription'],
         'icon'       => 'system/modules/isotope_subscriptions/assets/img/icon.png',
-        'export_xls' => \HeimrichHannot\Exporter\ModuleExporter::getBackendModule(),
+        'export_xls' => ['huh.exporter.action.backendexport', 'export'],
     ],
 ]);
 
