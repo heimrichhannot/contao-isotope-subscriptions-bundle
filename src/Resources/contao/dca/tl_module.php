@@ -85,7 +85,7 @@ $arrFields['iso_addSubscriptionCheckbox'] = [
 
 $arrDca['fields'] = array_merge($arrDca['fields'], $arrFields);
 
-if (in_array('isotope_plus', \Contao\System::getContainer()->get('huh.utils.container')->getActiveBundles())) {
+if (\Contao\System::getContainer()->get('huh.utils.container')->isBundleActive('HeimrichHannotContaoIsotopeBundle')) {
     $arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['fields']                             = array_merge($arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['fields'], $arrFields);
     $arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
     $arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
@@ -100,17 +100,16 @@ if (in_array('isotope_plus', \Contao\System::getContainer()->get('huh.utils.cont
     echo '';
 }
 
-
 class tl_module_isotope_subscriptions
 {
     public function modifyPalette()
     {
-        $objModule = \ModuleModel::findByPk(\Input::get('id'));
+        $objModule = \Contao\System::getContainer()->get('contao.framework')->getAdapter(\Contao\ModuleModel::class)->findByPk(\Contao\System::getContainer()->get('huh.request')->getGet('id'));
         $arrDca    = &$GLOBALS['TL_DCA']['tl_module'];
 
         switch ($objModule->type) {
             case 'iso_direct_checkout':
-                if (in_array('isotope_plus', \ModuleLoader::getActive())) {
+                if (\Contao\System::getContainer()->get('huh.utils.container')->isBundleActive('HeimrichHannotContaoIsotopeBundle')) {
                     $arrDca['subpalettes']['iso_addSubscription'] = str_replace('iso_subscriptionArchive', 'iso_subscriptionArchive,iso_addSubscriptionCheckbox', $arrDca['subpalettes']['iso_addSubscription']);
                 }
             // no break!
@@ -124,18 +123,18 @@ class tl_module_isotope_subscriptions
 
     public function modifyFieldPalette()
     {
-        if (($objFieldPalette = \HeimrichHannot\FieldPalette\FieldPaletteModel::findByPk(\Input::get('id'))) === null) {
+        if (($objFieldPalette = \Contao\System::getContainer()->get('contao.framework')->getAdapter(\HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::class)->findByPk(\Contao\System::getContainer()->get('huh.request')->getGet('id'))) === null) {
             return;
         }
 
-        $objModule = \ModuleModel::findByPk($objFieldPalette->pid);
+        $objModule = \Contao\System::getContainer()->get('contao.framework')->getAdapter(\Contao\ModuleModel::class)->findByPk($objFieldPalette->pid);
         $arrDca    = &$GLOBALS['TL_DCA']['tl_fieldpalette'];
 
-        \Controller::loadDataContainer('tl_module');
+        \Contao\Controller::loadDataContainer('tl_module');
 
         switch ($objModule->type) {
             case 'iso_direct_checkout':
-                if (in_array('isotope_plus', \ModuleLoader::getActive())) {
+                if (\Contao\System::getContainer()->get('huh.utils.container')->isBundleActive('HeimrichHannotContaoIsotopeBundle')) {
                     $arrDca['subpalettes']['iso_addSubscription'] = str_replace('iso_subscriptionArchive', 'iso_subscriptionArchive,iso_addSubscriptionCheckbox', $GLOBALS['TL_DCA']['tl_module']['subpalettes']['iso_addSubscription']);
                 }
             // no break!

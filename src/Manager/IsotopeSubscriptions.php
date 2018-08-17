@@ -11,17 +11,18 @@ namespace HeimrichHannot\IsotopeSubscriptionsBundle\Manager;
 use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
+use Contao\Environment;
 use Contao\MemberModel;
 use Contao\Module;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
-use HeimrichHannot\FieldPalette\FieldPaletteModel;
+use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Model\Subscription;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchive;
 use Isotope\Model\Product\Standard;
 use Isotope\Model\ProductCollection\Order;
-use Isotope\Model\Subscription;
-use Isotope\Model\SubscriptionArchive;
 use NotificationCenter\Model\Notification;
 
 class IsotopeSubscriptions
@@ -69,7 +70,7 @@ class IsotopeSubscriptions
 
             if ((!$objFieldpalette->iso_addSubscriptionCheckbox || \Input::post('subscribeToProduct_'.$item->product_id)) && $objFieldpalette->iso_addSubscription && $objFieldpalette->iso_subscriptionArchive
                 && null !== ($objSubscriptionArchive = $this->framework->getAdapter(SubscriptionArchive::class)->findByPk($objFieldpalette->iso_subscriptionArchive))) {
-                if (null !== $this->framework->getAdapter(Standard::class)->findBy(['email=?', 'pid=?', 'disable!=?'], [$strEmail, $objSubscriptionArchive->id, 1])) {
+                if (null !== $this->framework->getAdapter(Subscription::class)->findBy(['email=?', 'pid=?', 'disable!=?'], [$strEmail, $objSubscriptionArchive->id, 1])) {
                     $_SESSION['ISO_ERROR'][] = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionAlreadyExists'], $strEmail, $item->name);
 
                     return false;
@@ -101,7 +102,6 @@ class IsotopeSubscriptions
         $objSession->remove('isotopeCheckoutModuleIdSubscriptions');
 
         $objModule = $this->framework->getAdapter(ModuleModel::class)->findByPk($intModule);
-
         foreach ($arrItems as $item) {
             switch ($objModule->iso_direct_checkout_product_mode) {
                 case 'product_type':
@@ -129,7 +129,7 @@ class IsotopeSubscriptions
                         if (null !== ($objNotification = $this->framework->getAdapter(Notification::class)->findByPk($objFieldpalette->iso_activationNotification))) {
                             if ($objFieldpalette->iso_activationJumpTo
                                 && null !== ($objPageRedirect = $this->framework->getAdapter(PageModel::class)->findPublishedById($objFieldpalette->iso_activationJumpTo))) {
-                                $tokens['link'] = \Environment::get('url').'/'.$objPageRedirect->getFrontendUrl().'?token='.$strToken;
+                                $tokens['link'] = Environment::get('url').'/'.$objPageRedirect->getFrontendUrl().'?token='.$strToken;
                             }
 
                             $objNotification->send($tokens, $GLOBALS['TL_LANGUAGE']);
