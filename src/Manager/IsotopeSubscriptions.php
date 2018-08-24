@@ -23,6 +23,7 @@ use HeimrichHannot\IsotopeSubscriptionsBundle\Model\Subscription;
 use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchive;
 use Isotope\Model\Product\Standard;
 use Isotope\Model\ProductCollection\Order;
+use Isotope\Model\ProductType;
 use NotificationCenter\Model\Notification;
 
 class IsotopeSubscriptions
@@ -105,7 +106,8 @@ class IsotopeSubscriptions
         foreach ($arrItems as $item) {
             switch ($objModule->iso_direct_checkout_product_mode) {
                 case 'product_type':
-                    $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product_type', $this->framework->getAdapter(Standard::class)->findAvailableByIdOrAlias($item->product_id)->type);
+                    $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product_type', $this->framework->getAdapter(Standard::class)->findPublishedByIdOrAlias($item->product_id)->type);
+                    
                     break;
                 default:
                     $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product', $item->product_id);

@@ -3,10 +3,12 @@
 /**
  * Backend modules
  */
-\Contao\System::getContainer()->get('huh.utils.array')->insertInArrayByName($GLOBALS['BE_MOD']['isotope'], 'iso_rules', [
+
+
+\Contao\System::getContainer()->get('huh.utils.array')->insertInArrayByName($GLOBALS['BE_MOD']['isotope'], 'iso_products', [
     'iso_subscriptions' => [
         'tables'     => ['tl_iso_subscription_archive', 'tl_iso_subscription'],
-        'icon'       => 'system/modules/isotope_subscriptions/assets/img/icon.png',
+//        'icon'       => 'system/modules/isotope_subscriptions/assets/img/icon.png',
         'export_xls' => ['huh.exporter.action.backendexport', 'export'],
     ],
 ]);

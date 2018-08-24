@@ -12,6 +12,7 @@ use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
+use HeimrichHannot\IsotopeBundle\HeimrichHannotContaoIsotopeBundle;
 use HeimrichHannot\IsotopeSubscriptionsBundle\HeimrichHannotContaoIsotopeSubscriptionsBundle;
 
 class Plugin implements BundlePluginInterface
@@ -25,6 +26,7 @@ class Plugin implements BundlePluginInterface
             BundleConfig::create(HeimrichHannotContaoIsotopeSubscriptionsBundle::class)->setLoadAfter([
                 ContaoCoreBundle::class,
                 'isotope',
+                HeimrichHannotContaoIsotopeBundle::class
             ]),
         ];
     }
