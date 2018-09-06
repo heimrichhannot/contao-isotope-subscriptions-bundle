@@ -26,7 +26,7 @@ class Plugin implements BundlePluginInterface
             BundleConfig::create(HeimrichHannotContaoIsotopeSubscriptionsBundle::class)->setLoadAfter([
                 ContaoCoreBundle::class,
                 'isotope',
-                HeimrichHannotContaoIsotopeBundle::class
+                HeimrichHannotContaoIsotopeBundle::class,
             ]),
         ];
     }
