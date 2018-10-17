@@ -10,7 +10,7 @@
     "symfony/framework-bundle": "^3.4",
     "heimrichhannot/contao-utils-bundle": "^2.0",
     "heimrichhannot/contao-member-bundle": "^1.0-beta",
-    "heimrichhannot/contao-exporter-bundle": "~0.3||^1.0"
+    "heimrichhannot/contao-exporter-bundle": "~0.3"
   },
   "minimum-stability": "beta",
   "require-dev": {
