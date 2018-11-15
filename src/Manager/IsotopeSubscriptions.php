@@ -130,7 +130,9 @@ class IsotopeSubscriptions
                         if (null !== ($objNotification = $this->framework->getAdapter(Notification::class)->findByPk($objFieldpalette->iso_activationNotification))) {
                             if ($objFieldpalette->iso_activationJumpTo
                                 && null !== ($objPageRedirect = $this->framework->getAdapter(PageModel::class)->findPublishedById($objFieldpalette->iso_activationJumpTo))) {
-                                $tokens['link'] = Environment::get('url').'/'.$objPageRedirect->getFrontendUrl().'?token='.$strToken;
+//                                $tokens['link'] = Environment::get('url') . DIRECTORY_SEPARATOR . $objPageRedirect->getFrontendUrl().'?token='.$strToken;
+                                
+                                $tokens['link'] = $objPageRedirect->getAbsoluteUrl() . '?token='.$strToken;
                             }
 
                             $objNotification->send($tokens, $GLOBALS['TL_LANGUAGE']);
