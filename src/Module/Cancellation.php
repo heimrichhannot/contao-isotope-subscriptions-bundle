@@ -13,7 +13,7 @@ use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
 use Contao\Widget;
-use Isotope\Model\Subscription;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Model\Subscription;
 use Isotope\Model\SubscriptionArchive;
 use Isotope\Module\Module;
 

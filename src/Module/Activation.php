@@ -11,7 +11,7 @@ namespace HeimrichHannot\IsotopeSubscriptionsBundle\Module;
 use Contao\Controller;
 use Contao\PageModel;
 use Contao\System;
-use Isotope\Model\Subscription;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Model\Subscription;
 use Isotope\Module\Module;
 
 /**
