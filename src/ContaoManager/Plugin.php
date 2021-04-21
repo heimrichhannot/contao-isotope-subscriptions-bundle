@@ -23,8 +23,8 @@ class Plugin implements BundlePluginInterface
     public function getBundles(ParserInterface $parser)
     {
         $loadAfter = [
-            ContaoCoreBundle::class,
             'isotope',
+            ContaoCoreBundle::class,
         ];
 
         if (class_exists('HeimrichHannot\IsotopeBundle\HeimrichHannotIsotopeBundle')) {

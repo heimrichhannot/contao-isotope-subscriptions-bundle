@@ -123,8 +123,9 @@ $GLOBALS['TL_DCA']['tl_iso_subscription'] = [
 ];
 
 // if not set, all fields are used
-\Contao\System::getContainer()->get(\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class)
-    ->importIsotopeAddressFields();
+// TODO move to loadDataCOntainer listener
+//\Contao\System::getContainer()->get(\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class)
+//    ->importIsotopeAddressFields();
 
 class tl_iso_subscription extends \Backend
 {
