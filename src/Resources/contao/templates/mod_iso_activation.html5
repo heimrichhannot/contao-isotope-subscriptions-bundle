@@ -1,6 +1,7 @@
 <?php $this->extend('block_searchable'); ?>
 
 <?php $this->block('content'); ?>
+dsfdsfdfsfsd
 
     <?php if ($this->error): ?>
         <p class="alert alert-danger"><?= $this->error; ?></p>

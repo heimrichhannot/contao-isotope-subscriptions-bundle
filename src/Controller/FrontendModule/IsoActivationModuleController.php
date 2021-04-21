@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @FrontendModule(category="miscellaneous")
+ * @FrontendModule(category="isotope_subscriptions")
  */
 class IsoActivationModuleController extends AbstractFrontendModuleController
 {

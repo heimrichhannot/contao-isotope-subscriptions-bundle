@@ -21,6 +21,7 @@ use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionModel;
 use HeimrichHannot\RequestBundle\Component\HttpFoundation\Request;
 use HeimrichHannot\UtilsBundle\Arrays\ArrayUtil;
 use HeimrichHannot\UtilsBundle\Model\ModelUtil;
+use HeimrichHannot\UtilsBundle\Url\UrlUtil;
 use Isotope\Model\Product\Standard;
 use Isotope\Model\ProductCollection\Order;
 use NotificationCenter\Model\Notification;
@@ -32,13 +33,19 @@ class SubscriptionManager
     protected SessionInterface $session;
     protected Request          $request;
     protected ArrayUtil        $arrayUtil;
+    protected UrlUtil          $urlUtil;
 
-    public function __construct(SessionInterface $session, Request $request, ModelUtil $modelUtil, ArrayUtil $arrayUtil)
-    {
+    public function __construct(SessionInterface $session,
+        Request $request,
+        ModelUtil $modelUtil,
+        ArrayUtil $arrayUtil,
+        UrlUtil $urlUtil
+    ) {
         $this->modelUtil = $modelUtil;
         $this->session = $session;
         $this->request = $request;
         $this->arrayUtil = $arrayUtil;
+        $this->urlUtil = $urlUtil;
     }
 
     public function setCheckoutModuleIdSubscriptions(Order $order, Module $module)
@@ -128,9 +135,7 @@ class SubscriptionManager
                         if (null !== ($objNotification = $this->framework->getAdapter(Notification::class)->findByPk($objFieldpalette->iso_activationNotification))) {
                             if ($objFieldpalette->iso_activationJumpTo
                                 && null !== ($objPageRedirect = $this->framework->getAdapter(PageModel::class)->findPublishedById($objFieldpalette->iso_activationJumpTo))) {
-//                                $tokens['link'] = Environment::get('url') . DIRECTORY_SEPARATOR . $objPageRedirect->getFrontendUrl().'?token='.$strToken;
-
-                                $tokens['link'] = $objPageRedirect->getAbsoluteUrl().'?token='.$strToken;
+                                $tokens['link'] = $this->urlUtil->addQueryString('token='.$strToken, $objPageRedirect->getAbsoluteUrl());
                             }
 
                             $objNotification->send($tokens, $GLOBALS['TL_LANGUAGE']);
