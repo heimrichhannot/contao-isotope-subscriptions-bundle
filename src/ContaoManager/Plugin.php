@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2018 Heimrich & Hannot GmbH
+ * Copyright (c) 2021 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -12,8 +12,8 @@ use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
-use HeimrichHannot\IsotopeBundle\HeimrichHannotContaoIsotopeBundle;
-use HeimrichHannot\IsotopeSubscriptionsBundle\HeimrichHannotContaoIsotopeSubscriptionsBundle;
+use HeimrichHannot\IsotopeSubscriptionsBundle\HeimrichHannotIsotopeSubscriptionsBundle;
+use Symfony\Component\Config\Loader\LoaderInterface;
 
 class Plugin implements BundlePluginInterface
 {
@@ -22,12 +22,22 @@ class Plugin implements BundlePluginInterface
      */
     public function getBundles(ParserInterface $parser)
     {
-        return [
-            BundleConfig::create(HeimrichHannotContaoIsotopeSubscriptionsBundle::class)->setLoadAfter([
-                ContaoCoreBundle::class,
-                'isotope',
-                HeimrichHannotContaoIsotopeBundle::class,
-            ]),
+        $loadAfter = [
+            ContaoCoreBundle::class,
+            'isotope',
         ];
+
+        if (class_exists('HeimrichHannot\IsotopeBundle\HeimrichHannotIsotopeBundle')) {
+            $loadAfter[] = \HeimrichHannot\IsotopeBundle\HeimrichHannotIsotopeBundle::class;
+        }
+
+        return [
+            BundleConfig::create(HeimrichHannotIsotopeSubscriptionsBundle::class)->setLoadAfter(),
+        ];
+    }
+
+    public function registerContainerConfiguration(LoaderInterface $loader, array $managerConfig)
+    {
+        $loader->load('@HeimrichHannotIsotopeSubscriptionsBundle/Resources/config/services.yml');
     }
 }

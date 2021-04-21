@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2018 Heimrich & Hannot GmbH
+ * Copyright (c) 2021 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -10,8 +10,6 @@ namespace HeimrichHannot\IsotopeSubscriptionsBundle\Manager;
 
 use Contao\Config;
 use Contao\Controller;
-use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
-use Contao\Environment;
 use Contao\MemberModel;
 use Contao\Module;
 use Contao\ModuleModel;
@@ -19,59 +17,62 @@ use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\IsotopeSubscriptionsBundle\Model\Subscription;
-use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchive;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchiveModel;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionModel;
+use HeimrichHannot\UtilsBundle\Model\ModelUtil;
 use Isotope\Model\Product\Standard;
 use Isotope\Model\ProductCollection\Order;
 use NotificationCenter\Model\Notification;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
-class IsotopeSubscriptions
+class SubscriptionManager
 {
     /**
-     * @var ContaoFrameworkInterface
+     * @var ModelUtil
      */
-    protected $framework;
+    protected ModelUtil $modelUtil;
+    /**
+     * @var SessionInterface
+     */
+    protected SessionInterface $session;
 
-    public function __construct(ContaoFrameworkInterface $framework)
+    public function __construct(ModelUtil $modelUtil, SessionInterface $session)
     {
-        $this->framework = $framework;
+        $this->modelUtil = $modelUtil;
+        $this->session = $session;
+    }
+
+    public function setCheckoutModuleIdSubscriptions(Order $order, Module $module)
+    {
+        $this->session->set('isotopeCheckoutModuleIdSubscriptions', $module->id);
     }
 
     /**
-     * @param Order  $oder
-     * @param Module $module
-     */
-    public function setCheckoutModuleIdSubscriptions(Order $oder, Module $module)
-    {
-        System::getContainer()->get('session')->set('isotopeCheckoutModuleIdSubscriptions', $module->id);
-    }
-
-    /**
-     * @param Order  $order
-     * @param Module $module
-     *
      * @return bool
      */
     public function checkForExistingSubscription(Order $order, Module $module)
     {
-        $strEmail = $order->getBillingAddress()->email;
+        $email = $order->getBillingAddress()->email;
 
-        $arrItems = $order->getItems();
+        $items = $order->getItems();
 
-        foreach ($arrItems as $item) {
+        foreach ($items as $item) {
             switch ($module->iso_direct_checkout_product_mode) {
                 case 'product_type':
                     $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product_type', $this->framework->getAdapter(Standard::class)->findAvailableByIdOrAlias($item->product_id)->type);
+
                     break;
+
                 default:
                     $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product', $item->product_id);
+
                     break;
             }
 
             if ((!$objFieldpalette->iso_addSubscriptionCheckbox || \Input::post('subscribeToProduct_'.$item->product_id)) && $objFieldpalette->iso_addSubscription && $objFieldpalette->iso_subscriptionArchive
-                && null !== ($objSubscriptionArchive = $this->framework->getAdapter(SubscriptionArchive::class)->findByPk($objFieldpalette->iso_subscriptionArchive))) {
-                if (null !== $this->framework->getAdapter(Subscription::class)->findBy(['email=?', 'pid=?', 'disable!=?'], [$strEmail, $objSubscriptionArchive->id, 1])) {
-                    $_SESSION['ISO_ERROR'][] = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionAlreadyExists'], $strEmail, $item->name);
+                && null !== ($objSubscriptionArchive = $this->framework->getAdapter(SubscriptionArchiveModel::class)->findByPk($objFieldpalette->iso_subscriptionArchive))) {
+                if (null !== $this->framework->getAdapter(SubscriptionModel::class)->findBy(['email=?', 'pid=?', 'disable!=?'], [$email, $objSubscriptionArchive->id, 1])) {
+                    $_SESSION['ISO_ERROR'][] = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionAlreadyExists'], $email, $item->name);
 
                     return false;
                 }
@@ -82,9 +83,6 @@ class IsotopeSubscriptions
     }
 
     /**
-     * @param Order $order
-     * @param array $tokens
-     *
      * @return bool
      */
     public function addSubscriptions(Order $order, array $tokens)
@@ -102,23 +100,26 @@ class IsotopeSubscriptions
         $objSession->remove('isotopeCheckoutModuleIdSubscriptions');
 
         $objModule = $this->framework->getAdapter(ModuleModel::class)->findByPk($intModule);
+
         foreach ($arrItems as $item) {
             switch ($objModule->iso_direct_checkout_product_mode) {
                 case 'product_type':
                     $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product_type', $this->framework->getAdapter(Standard::class)->findPublishedByIdOrAlias($item->product_id)->type);
 
                     break;
+
                 default:
                     $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product', $item->product_id);
+
                     break;
             }
 
             if (null !== $objFieldpalette && $objFieldpalette->iso_addSubscription) {
                 if ($objFieldpalette->iso_subscriptionArchive && (!$objFieldpalette->iso_addSubscriptionCheckbox || \Input::post('subscribeToProduct_'.$item->product_id))) {
-                    $objSubscription = $this->framework->getAdapter(Subscription::class)->findOneBy(['email=?', 'pid=?', 'activation!=?', 'disable=?'], [$strEmail, $objFieldpalette->iso_subscriptionArchive, '', 1]);
+                    $objSubscription = $this->framework->getAdapter(SubscriptionModel::class)->findOneBy(['email=?', 'pid=?', 'activation!=?', 'disable=?'], [$strEmail, $objFieldpalette->iso_subscriptionArchive, '', 1]);
 
                     if (!$objSubscription) {
-                        $objSubscription = new Subscription();
+                        $objSubscription = new SubscriptionModel();
                     }
 
                     if ($objFieldpalette->iso_addActivation) {
@@ -131,8 +132,8 @@ class IsotopeSubscriptions
                             if ($objFieldpalette->iso_activationJumpTo
                                 && null !== ($objPageRedirect = $this->framework->getAdapter(PageModel::class)->findPublishedById($objFieldpalette->iso_activationJumpTo))) {
 //                                $tokens['link'] = Environment::get('url') . DIRECTORY_SEPARATOR . $objPageRedirect->getFrontendUrl().'?token='.$strToken;
-                                
-                                $tokens['link'] = $objPageRedirect->getAbsoluteUrl() . '?token='.$strToken;
+
+                                $tokens['link'] = $objPageRedirect->getAbsoluteUrl().'?token='.$strToken;
                             }
 
                             $objNotification->send($tokens, $GLOBALS['TL_LANGUAGE']);
@@ -174,7 +175,7 @@ class IsotopeSubscriptions
         $arrSkipFields = ['id', 'pid', 'tstamp', 'ptable', 'label', 'store_id', 'isDefaultBilling', 'isDefaultShipping'];
 
         foreach ($GLOBALS['TL_DCA']['tl_iso_address']['fields'] as $strName => $arrData) {
-            if (!in_array($strName, $arrSkipFields, true)) {
+            if (!\in_array($strName, $arrSkipFields, true)) {
                 $arrOptions[$strName] = $GLOBALS['TL_LANG']['tl_iso_address'][$strName][0] ?: $strName;
             }
         }
@@ -199,6 +200,7 @@ class IsotopeSubscriptions
         }
 
         $arrFields = [];
+
         foreach (StringUtil::deserialize($arrAddressFields, true) as $strName) {
             $arrFields[$strName] = $GLOBALS['TL_DCA']['tl_iso_address']['fields'][$strName];
 
@@ -210,8 +212,8 @@ class IsotopeSubscriptions
                 $arrFields[$strName]['eval']['unique'] = true;
             }
 
-            if ($blnChangeMandatoryAddressFields && is_array($arrMandatoryAddressFields)) {
-                $arrFields[$strName]['eval']['mandatory'] = in_array($strName, $arrMandatoryAddressFields, true);
+            if ($blnChangeMandatoryAddressFields && \is_array($arrMandatoryAddressFields)) {
+                $arrFields[$strName]['eval']['mandatory'] = \in_array($strName, $arrMandatoryAddressFields, true);
             }
         }
 
@@ -247,7 +249,7 @@ class IsotopeSubscriptions
         $username = $request->getPost('username') ? $request->getPost('username') : $request->getPost('email');
 
         // check if user has a subscribtion
-        if ($module->iso_checkForExitingSubscription && null === ($objSubscription = $this->framework->getAdapter(Subscription::class)->findBy('email', $username))) {
+        if ($module->iso_checkForExitingSubscription && null === ($objSubscription = $this->framework->getAdapter(SubscriptionModel::class)->findBy('email', $username))) {
             $_SESSION['LOGIN_ERROR'] = $GLOBALS['TL_LANG']['MSC']['noAbonement'];
             Controller::reload();
         }
@@ -256,7 +258,7 @@ class IsotopeSubscriptions
             $arrGroups = StringUtil::deserialize($objMember->groups);
 
             foreach (StringUtil::deserialize($module->reg_groups) as $group) {
-                if (!in_array($group, $arrGroups, true)) {
+                if (!\in_array($group, $arrGroups, true)) {
                     $arrGroups[] = $group;
                 }
             }

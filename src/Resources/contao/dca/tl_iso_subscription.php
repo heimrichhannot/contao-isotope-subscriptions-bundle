@@ -123,7 +123,8 @@ $GLOBALS['TL_DCA']['tl_iso_subscription'] = [
 ];
 
 // if not set, all fields are used
-\Contao\System::getContainer()->get('huh.isotope_subscriptions.manager.subscriptions')->importIsotopeAddressFields();
+\Contao\System::getContainer()->get(\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class)
+    ->importIsotopeAddressFields();
 
 class tl_iso_subscription extends \Backend
 {
@@ -335,7 +336,7 @@ class tl_iso_subscription extends \Backend
     {
         $arrOptions = [];
 
-        if (($objSubscription = \HeimrichHannot\IsotopeSubscriptionsBundle\Model\Subscription::findByPk($objDc->activeRecord->id)) !== null) {
+        if (($objSubscription = \HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionModel::findByPk($objDc->activeRecord->id)) !== null) {
             if (($objOrders = \Isotope\Model\ProductCollection\Order::findByType('order')) !== null) {
                 while ($objOrders->next()) {
                     foreach ($objOrders->current()->getItems() as $objItem) {

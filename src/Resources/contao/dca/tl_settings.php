@@ -20,7 +20,7 @@ $arrDca['fields']['iso_addressFields'] = [
     'label'            => &$GLOBALS['TL_LANG']['tl_settings']['iso_addressFields'],
     'exclude'          => true,
     'inputType'        => 'checkbox',
-    'options_callback' => ['huh.isotope_subscriptions.manager.subscriptions', 'getIsotopeAddressFields'],
+    'options_callback' => [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'getIsotopeAddressFields'],
     'eval'             => ['multiple' => true, 'tl_class' => 'w50 clr'],
 ];
 
@@ -35,6 +35,6 @@ $arrDca['fields']['iso_mandatoryAddressFields'] = [
     'label'            => &$GLOBALS['TL_LANG']['tl_settings']['iso_mandatoryAddressFields'],
     'exclude'          => true,
     'inputType'        => 'checkbox',
-    'options_callback' => ['huh.isotope_subscriptions.manager.subscriptions', 'getIsotopeAddressFields'],
+    'options_callback' => [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'getIsotopeAddressFields'],
     'eval'             => ['multiple' => true, 'tl_class' => 'w50 clr'],
 ];

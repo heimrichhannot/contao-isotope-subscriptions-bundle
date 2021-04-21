@@ -5,12 +5,11 @@
   "license": "LGPL-3.0-or-later",
   "require": {
     "php": "^7.1",
-    "contao/core-bundle": "^4.4",
-    "isotope/isotope-core": "^2.4",
-    "symfony/framework-bundle": "^3.4",
-    "heimrichhannot/contao-utils-bundle": "^2.0",
-    "heimrichhannot/contao-member-bundle": "^1.0-beta",
-    "heimrichhannot/contao-exporter-bundle": "~0.3"
+    "contao/core-bundle": "^4.9",
+    "isotope/isotope-core": "^2.7",
+    "heimrichhannot/contao-utils-bundle": "^2.191",
+    "heimrichhannot/contao-request-bundle": "^1.2",
+    "heimrichhannot/contao-exporter-bundle": "~0.9"
   },
   "minimum-stability": "beta",
   "require-dev": {

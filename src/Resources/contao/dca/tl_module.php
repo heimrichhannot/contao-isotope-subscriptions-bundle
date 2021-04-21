@@ -1,31 +1,31 @@
 <?php
 
-$arrDca = &$GLOBALS['TL_DCA']['tl_module'];
+$dca = &$GLOBALS['TL_DCA']['tl_module'];
 
 /**
  * Palettes
  */
-$arrDca['palettes']['iso_activation']          = '{title_legend},name,headline,type;{redirect_legend],jumpTo;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
-$arrDca['palettes']['iso_cancellation']        = '{title_legend},name,headline,type;{config_legend},iso_cancellationArchives,nc_notification;{redirect_legend],jumpTo;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
-$arrDca['palettes']['login_registration_plus'] = str_replace('newsletters;', 'newsletters,iso_checkForExitingSubscription;', $arrDca['palettes']['login_registration_plus']);
+$dca['palettes']['__selector__'][] = 'iso_addSubscription';
 
-$arrDca['palettes']['registration_plus'] = str_replace('newsletters;', 'newsletters,iso_checkForExitingSubscription;', $arrDca['palettes']['registration_plus']);
+$dca['palettes'][\HeimrichHannot\IsotopeSubscriptionsBundle\Module\IsoActivationModuleController::TYPE] =
+    '{title_legend},name,headline,type;{redirect_legend],jumpTo;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
+
+$dca['palettes'][\HeimrichHannot\IsotopeSubscriptionsBundle\Module\IsoCancellationModuleController::TYPE] =
+    '{title_legend},name,headline,type;{config_legend},iso_cancellationArchives,nc_notification;{redirect_legend],jumpTo;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
+
+// TODO: Registrierung -> plus wirklich notwendig??
+$dca['palettes']['login_registration_plus'] = str_replace('newsletters;', 'newsletters,iso_checkForExitingSubscription;', $dca['palettes']['login_registration_plus']);
+$dca['palettes']['registration_plus']       = str_replace('newsletters;', 'newsletters,iso_checkForExitingSubscription;', $dca['palettes']['registration_plus']);
 
 /**
  * Subpalettes
  */
-$arrDca['palettes']['__selector__'][]         = 'iso_addSubscription';
-$arrDca['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
-
-/**
- * Callbacks
- */
-$arrDca['config']['onload_callback'][] = ['tl_module_isotope_subscriptions', 'modifyPalette'];
+$dca['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
 
 /**
  * Fields
  */
-$arrFields = [
+$fields = [
     'iso_addSubscription'             => [
         'label'     => &$GLOBALS['TL_LANG']['tl_module']['iso_addSubscription'],
         'exclude'   => true,
@@ -56,7 +56,7 @@ $arrFields = [
         'eval'      => ['tl_class' => 'w50 clr', 'submitOnChange' => true],
         'sql'       => "char(1) NOT NULL default ''",
     ],
-    'iso_activationJumpTo'            => $arrDca['fields']['jumpTo'],
+    'iso_activationJumpTo'            => $dca['fields']['jumpTo'],
     'iso_checkForExitingSubscription' => [
         'label'     => &$GLOBALS['TL_LANG']['tl_module']['iso_checkForExitingSubscription'],
         'exclude'   => true,
@@ -67,14 +67,14 @@ $arrFields = [
     ],
 ];
 
-$arrFields['iso_activationJumpTo']['label']            = &$GLOBALS['TL_LANG']['tl_module']['iso_activationJumpTo'];
-$arrFields['iso_activationJumpTo']['eval']['tl_class'] = 'w50';
+$fields['iso_activationJumpTo']['label']            = &$GLOBALS['TL_LANG']['tl_module']['iso_activationJumpTo'];
+$fields['iso_activationJumpTo']['eval']['tl_class'] = 'w50';
 
-$arrFields['iso_activationNotification']                      = $arrDca['fields']['nc_notification'];
-$arrFields['iso_activationNotification']['label']             = &$GLOBALS['TL_LANG']['tl_module']['iso_activationNotification'];
-$arrFields['iso_activationNotification']['eval']['mandatory'] = true;
+$fields['iso_activationNotification']                      = $dca['fields']['nc_notification'];
+$fields['iso_activationNotification']['label']             = &$GLOBALS['TL_LANG']['tl_module']['iso_activationNotification'];
+$fields['iso_activationNotification']['eval']['mandatory'] = true;
 
-$arrFields['iso_addSubscriptionCheckbox'] = [
+$fields['iso_addSubscriptionCheckbox'] = [
     'label'     => &$GLOBALS['TL_LANG']['tl_module']['iso_addSubscriptionCheckbox'],
     'exclude'   => true,
     'filter'    => true,
@@ -83,68 +83,19 @@ $arrFields['iso_addSubscriptionCheckbox'] = [
     'sql'       => "char(1) NOT NULL default ''",
 ];
 
-$arrDca['fields'] = array_merge($arrDca['fields'], $arrFields);
+$dca['fields'] = array_merge($dca['fields'], $fields);
 
 if (\Contao\System::getContainer()->get('huh.utils.container')->isBundleActive('HeimrichHannotContaoIsotopeBundle')) {
-    $arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['fields']                             = array_merge($arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['fields'], $arrFields);
-    $arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
-    $arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
-    $arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['default']                .= ',iso_addSubscription';
-    $arrDca['fields']['iso_direct_checkout_products']['fieldpalette']['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
+    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['fields']                             = array_merge($dca['fields']['iso_direct_checkout_products']['fieldpalette']['fields'], $fields);
+    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
+    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
+    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['default']                .= ',iso_addSubscription';
+    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
 
-    $arrDca['fields']['iso_direct_checkout_product_types']['fieldpalette']['fields']                             = array_merge($arrDca['fields']['iso_direct_checkout_product_types']['fieldpalette']['fields'], $arrFields);
-    $arrDca['fields']['iso_direct_checkout_product_types']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
-    $arrDca['fields']['iso_direct_checkout_product_types']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
-    $arrDca['fields']['iso_direct_checkout_product_types']['fieldpalette']['palettes']['default']                .= ',iso_addSubscription';
-    $arrDca['fields']['iso_direct_checkout_product_types']['fieldpalette']['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
+    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['fields']                             = array_merge($dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['fields'], $fields);
+    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
+    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
+    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['palettes']['default']                .= ',iso_addSubscription';
+    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
     echo '';
 }
-
-class tl_module_isotope_subscriptions
-{
-    public function modifyPalette()
-    {
-        $objModule = \Contao\System::getContainer()->get('contao.framework')->getAdapter(\Contao\ModuleModel::class)->findByPk(\Contao\System::getContainer()->get('huh.request')->getGet('id'));
-        $arrDca    = &$GLOBALS['TL_DCA']['tl_module'];
-
-        switch ($objModule->type) {
-            case 'iso_direct_checkout':
-                if (\Contao\System::getContainer()->get('huh.utils.container')->isBundleActive('HeimrichHannotContaoIsotopeBundle')) {
-                    $arrDca['subpalettes']['iso_addSubscription'] = str_replace('iso_subscriptionArchive', 'iso_subscriptionArchive,iso_addSubscriptionCheckbox', $arrDca['subpalettes']['iso_addSubscription']);
-                }
-            // no break!
-            case 'iso_checkout':
-                if ($objModule->iso_addActivation) {
-                    $arrDca['subpalettes']['iso_addSubscription'] = str_replace('iso_addActivation', 'iso_addActivation,iso_activationNotification,iso_activationJumpTo', $arrDca['subpalettes']['iso_addSubscription']);
-                }
-                break;
-        }
-    }
-
-    public function modifyFieldPalette()
-    {
-        if (($objFieldPalette = \Contao\System::getContainer()->get('contao.framework')->getAdapter(\HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::class)->findByPk(\Contao\System::getContainer()->get('huh.request')->getGet('id'))) === null) {
-            return;
-        }
-
-        $objModule = \Contao\System::getContainer()->get('contao.framework')->getAdapter(\Contao\ModuleModel::class)->findByPk($objFieldPalette->pid);
-        $arrDca    = &$GLOBALS['TL_DCA']['tl_fieldpalette'];
-
-        \Contao\Controller::loadDataContainer('tl_module');
-
-        switch ($objModule->type) {
-            case 'iso_direct_checkout':
-                if (\Contao\System::getContainer()->get('huh.utils.container')->isBundleActive('HeimrichHannotContaoIsotopeBundle')) {
-                    $arrDca['subpalettes']['iso_addSubscription'] = str_replace('iso_subscriptionArchive', 'iso_subscriptionArchive,iso_addSubscriptionCheckbox', $GLOBALS['TL_DCA']['tl_module']['subpalettes']['iso_addSubscription']);
-                }
-            // no break!
-            case 'iso_checkout':
-                if ($objFieldPalette->iso_addActivation) {
-                    $arrDca['subpalettes']['iso_addSubscription'] = str_replace('iso_addActivation', 'iso_addActivation,iso_activationNotification,iso_activationJumpTo', $GLOBALS['TL_DCA']['tl_module']['subpalettes']['iso_addSubscription']);
-                }
-                break;
-        }
-    }
-
-}
-

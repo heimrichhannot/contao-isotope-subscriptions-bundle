@@ -1,23 +1,22 @@
-<div class="<?php echo $this->class; ?> <?php if ($this->active): ?>active <?php endif; ?>block"<?php echo $this->cssID; ?><?php if ($this->style): ?> style="<?php echo $this->style; ?>"<?php endif; ?>>
-    <?php if ($this->headline): ?>
-    <<?php echo $this->hl; ?>><?php echo $this->headline; ?></<?php echo $this->hl; ?>>
-<?php endif; ?>
+<?php $this->extend('block_searchable'); ?>
 
-<?php if ($this->error): ?>
-    <p class="alert alert-danger"><?= $this->error; ?></p>
-<?php elseif ($this->success): ?>
-    <p class="alert alert-success"><?= $this->success; ?></p>
-<?php endif; ?>
+<?php $this->block('content'); ?>
 
-<?php if (!$this->success): ?>
-    <form id="<?= $this->formId; ?>" method="post" novalidate>
-        <input type="hidden" name="FORM_SUBMIT" value="<?php echo $this->formId; ?>">
-        <input type="hidden" name="REQUEST_TOKEN" value="{{request_token}}">
+    <?php if ($this->error): ?>
+        <p class="alert alert-danger"><?= $this->error; ?></p>
+    <?php elseif ($this->success): ?>
+        <p class="alert alert-success"><?= $this->success; ?></p>
+    <?php endif; ?>
 
-        <div class="formbody">
-            <?= $this->fields; ?>
-        </div>
-    </form>
-<?php endif; ?>
+    <?php if (!$this->success): ?>
+        <form id="iso_cancellation" method="post" novalidate>
+            <input type="hidden" name="FORM_SUBMIT" value="iso_cancellation">
+            <input type="hidden" name="REQUEST_TOKEN" value="{{request_token}}">
 
-</div>
+            <div class="formbody">
+                <?= $this->fields; ?>
+            </div>
+        </form>
+    <?php endif; ?>
+
+<?php $this->endblock(); ?>
