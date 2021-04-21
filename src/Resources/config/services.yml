@@ -6,3 +6,5 @@ services:
 
   HeimrichHannot\IsotopeSubscriptionsBundle\:
     resource: '../../{Controller,DataContainer,Manager}/*'
+    autoconfigure: true
+    public: true

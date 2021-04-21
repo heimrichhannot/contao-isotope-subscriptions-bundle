@@ -3,9 +3,9 @@
 /**
  * Frontend
  */
-$GLOBALS['TL_LANG']['FMD']['isotope_subscriptions']                                                    = 'Isotope Abos';
-$GLOBALS['TL_LANG']['FMD'][\HeimrichHannot\IsotopeSubscriptionsBundle\Module\IsoActivationModuleController::TYPE]   = ['Aktivierung', ''];
-$GLOBALS['TL_LANG']['FMD'][\HeimrichHannot\IsotopeSubscriptionsBundle\Module\IsoCancellationModuleController::TYPE] = ['Kündigen', ''];
+$GLOBALS['TL_LANG']['FMD']['isotope_subscriptions']                                                                                            = 'Isotope Abos';
+$GLOBALS['TL_LANG']['FMD'][\HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule\IsoActivationFrontendModuleController::TYPE]   = ['Aktivierung', ''];
+$GLOBALS['TL_LANG']['FMD'][\HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule\IsoCancellationFrontendModuleController::TYPE] = ['Kündigen', ''];
 
 /**
  * Backend

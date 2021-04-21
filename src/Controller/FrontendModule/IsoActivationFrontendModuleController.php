@@ -6,7 +6,7 @@
  * @license LGPL-3.0-or-later
  */
 
-namespace HeimrichHannot\IsotopeSubscriptionsBundle\Module;
+namespace HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule;
 
 use Contao\CoreBundle\Controller\FrontendModule\AbstractFrontendModuleController;
 use Contao\CoreBundle\Exception\RedirectResponseException;
@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @FrontendModule(category="isotope_subscriptions")
  */
-class IsoActivationModuleController extends AbstractFrontendModuleController
+class IsoActivationFrontendModuleController extends AbstractFrontendModuleController
 {
     const TYPE = 'iso_activation';
 

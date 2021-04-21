@@ -7,10 +7,10 @@ $dca = &$GLOBALS['TL_DCA']['tl_module'];
  */
 $dca['palettes']['__selector__'][] = 'iso_addSubscription';
 
-$dca['palettes'][\HeimrichHannot\IsotopeSubscriptionsBundle\Module\IsoActivationModuleController::TYPE] =
+$dca['palettes'][\HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule\IsoActivationFrontendModuleController::TYPE] =
     '{title_legend},name,headline,type;{redirect_legend],jumpTo;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
 
-$dca['palettes'][\HeimrichHannot\IsotopeSubscriptionsBundle\Module\IsoCancellationModuleController::TYPE] =
+$dca['palettes'][\HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule\IsoCancellationFrontendModuleController::TYPE] =
     '{title_legend},name,headline,type;{config_legend},iso_cancellationArchives,nc_notification;{redirect_legend],jumpTo;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
 
 // TODO: Registrierung -> plus wirklich notwendig??
