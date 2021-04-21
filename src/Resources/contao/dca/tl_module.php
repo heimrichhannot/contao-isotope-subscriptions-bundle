@@ -83,19 +83,19 @@ $fields['iso_addSubscriptionCheckbox'] = [
     'sql'       => "char(1) NOT NULL default ''",
 ];
 
-$dca['fields'] = array_merge($dca['fields'], $fields);
+$dca['fields'] = array_merge(is_array($dca['fields']) ? $dca['fields'] : [], $fields);
 
-if (\Contao\System::getContainer()->get('huh.utils.container')->isBundleActive('HeimrichHannotContaoIsotopeBundle')) {
-    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['fields']                             = array_merge($dca['fields']['iso_direct_checkout_products']['fieldpalette']['fields'], $fields);
-    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
-    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
-    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['default']                .= ',iso_addSubscription';
-    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
-
-    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['fields']                             = array_merge($dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['fields'], $fields);
-    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
-    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
-    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['palettes']['default']                .= ',iso_addSubscription';
-    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
-    echo '';
+if (class_exists('HeimrichHannot\IsotopeBundle\HeimrichHannotIsotopeBundle')) {
+    // TODO to mce
+//    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['fields']                             = array_merge($dca['fields']['iso_direct_checkout_products']['fieldpalette']['fields'], $fields);
+//    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
+//    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
+//    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['palettes']['default']                .= ',iso_addSubscription';
+//    $dca['fields']['iso_direct_checkout_products']['fieldpalette']['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
+//
+//    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['fields']                             = array_merge($dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['fields'], $fields);
+//    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['config']['onload_callback']          = ['modifyPalette' => ['tl_module_isotope_subscriptions', 'modifyFieldPalette']];
+//    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['palettes']['__selector__'][]         = 'iso_addSubscription';
+//    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['palettes']['default']                .= ',iso_addSubscription';
+//    $dca['fields']['iso_direct_checkout_product_types']['fieldpalette']['subpalettes']['iso_addSubscription'] = 'iso_subscriptionArchive,iso_addActivation';
 }

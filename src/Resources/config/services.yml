@@ -3,11 +3,5 @@ services:
     public: true
     autowire: true
 
-  HeimrichHannot\IsotopeSubscriptionsBundle\Manager\:
-    resource: '../../Manager/*'
-
-  HeimrichHannot\IsotopeSubscriptionsBundle\Controller\:
-    resource: '../../Controller/*'
-
-  HeimrichHannot\IsotopeSubscriptionsBundle\DataContainer\:
-    resource: '../../DataContainer/*'
+  HeimrichHannot\IsotopeSubscriptionsBundle\:
+    resource: '../../{Controller,DataContainer,Manager}/*'

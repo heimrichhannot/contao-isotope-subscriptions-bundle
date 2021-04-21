@@ -32,7 +32,7 @@ class Plugin implements BundlePluginInterface
         }
 
         return [
-            BundleConfig::create(HeimrichHannotIsotopeSubscriptionsBundle::class)->setLoadAfter(),
+            BundleConfig::create(HeimrichHannotIsotopeSubscriptionsBundle::class)->setLoadAfter($loadAfter),
         ];
     }
 

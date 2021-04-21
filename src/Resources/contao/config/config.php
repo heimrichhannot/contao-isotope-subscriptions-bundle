@@ -3,9 +3,7 @@
 /**
  * Backend modules
  */
-
-
-\Contao\System::getContainer()->get('huh.utils.array')->insertInArrayByName($GLOBALS['BE_MOD']['isotope'], 'iso_products', [
+\Contao\System::getContainer()->get(\HeimrichHannot\UtilsBundle\Arrays\ArrayUtil::class)->insertInArrayByName($GLOBALS['BE_MOD']['isotope'], 'iso_products', [
     'iso_subscriptions' => [
         'tables'     => ['tl_iso_subscription_archive', 'tl_iso_subscription'],
         'export_xls' => ['huh.exporter.action.backendexport', 'export'],

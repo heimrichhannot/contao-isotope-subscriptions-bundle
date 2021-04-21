@@ -12,13 +12,14 @@ use Contao\Config;
 use Contao\Controller;
 use Contao\MemberModel;
 use Contao\Module;
-use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchiveModel;
 use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionModel;
+use HeimrichHannot\RequestBundle\Component\HttpFoundation\Request;
+use HeimrichHannot\UtilsBundle\Arrays\ArrayUtil;
 use HeimrichHannot\UtilsBundle\Model\ModelUtil;
 use Isotope\Model\Product\Standard;
 use Isotope\Model\ProductCollection\Order;
@@ -27,19 +28,17 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class SubscriptionManager
 {
-    /**
-     * @var ModelUtil
-     */
-    protected ModelUtil $modelUtil;
-    /**
-     * @var SessionInterface
-     */
+    protected ModelUtil        $modelUtil;
     protected SessionInterface $session;
+    protected Request          $request;
+    protected ArrayUtil        $arrayUtil;
 
-    public function __construct(ModelUtil $modelUtil, SessionInterface $session)
+    public function __construct(SessionInterface $session, Request $request, ModelUtil $modelUtil, ArrayUtil $arrayUtil)
     {
         $this->modelUtil = $modelUtil;
         $this->session = $session;
+        $this->request = $request;
+        $this->arrayUtil = $arrayUtil;
     }
 
     public function setCheckoutModuleIdSubscriptions(Order $order, Module $module)
@@ -87,22 +86,20 @@ class SubscriptionManager
      */
     public function addSubscriptions(Order $order, array $tokens)
     {
-        $strEmail = $order->getBillingAddress()->email;
-        $objAddress = $order->getShippingAddress() ?: $order->getBillingAddress();
-        $arrItems = $order->getItems();
+        $email = $order->getBillingAddress()->email;
+        $address = $order->getShippingAddress() ?: $order->getBillingAddress();
+        $items = $order->getItems();
 
-        $objSession = System::getContainer()->get('session');
-
-        if (!($intModule = $objSession->get('isotopeCheckoutModuleIdSubscriptions'))) {
+        if (!($module = $this->session->get('isotopeCheckoutModuleIdSubscriptions'))) {
             return true;
         }
 
-        $objSession->remove('isotopeCheckoutModuleIdSubscriptions');
+        $this->session->remove('isotopeCheckoutModuleIdSubscriptions');
 
-        $objModule = $this->framework->getAdapter(ModuleModel::class)->findByPk($intModule);
+        $module = $this->modelUtil->findModelInstanceByPk('tl_module', $module);
 
-        foreach ($arrItems as $item) {
-            switch ($objModule->iso_direct_checkout_product_mode) {
+        foreach ($items as $item) {
+            switch ($module->iso_direct_checkout_product_mode) {
                 case 'product_type':
                     $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product_type', $this->framework->getAdapter(Standard::class)->findPublishedByIdOrAlias($item->product_id)->type);
 
@@ -116,7 +113,7 @@ class SubscriptionManager
 
             if (null !== $objFieldpalette && $objFieldpalette->iso_addSubscription) {
                 if ($objFieldpalette->iso_subscriptionArchive && (!$objFieldpalette->iso_addSubscriptionCheckbox || \Input::post('subscribeToProduct_'.$item->product_id))) {
-                    $objSubscription = $this->framework->getAdapter(SubscriptionModel::class)->findOneBy(['email=?', 'pid=?', 'activation!=?', 'disable=?'], [$strEmail, $objFieldpalette->iso_subscriptionArchive, '', 1]);
+                    $objSubscription = $this->framework->getAdapter(SubscriptionModel::class)->findOneBy(['email=?', 'pid=?', 'activation!=?', 'disable=?'], [$email, $objFieldpalette->iso_subscriptionArchive, '', 1]);
 
                     if (!$objSubscription) {
                         $objSubscription = new SubscriptionModel();
@@ -147,10 +144,10 @@ class SubscriptionManager
                     }
 
                     foreach (StringUtil::deserialize($arrAddressFields, true) as $strName) {
-                        $objSubscription->{$strName} = $objAddress->{$strName};
+                        $objSubscription->{$strName} = $address->{$strName};
                     }
 
-                    $objSubscription->email = $strEmail;
+                    $objSubscription->email = $email;
                     $objSubscription->pid = $objFieldpalette->iso_subscriptionArchive;
                     $objSubscription->tstamp = $objSubscription->dateAdded = time();
                     $objSubscription->quantity = \Input::post('quantity');
@@ -217,7 +214,7 @@ class SubscriptionManager
             }
         }
 
-        System::getContainer()->get('huh.utils.array')->insertInArrayByName($arrDca['fields'], 'tstamp', $arrFields, 1);
+        $this->arrayUtil->insertInArrayByName($arrDca['fields'], 'tstamp', $arrFields, 1);
 
         // palette
         $strInitialPalette = $arrDca['palettes']['default'];
@@ -245,8 +242,7 @@ class SubscriptionManager
      */
     public function checkUsernameForIsoSubscription($module)
     {
-        $request = System::getContainer()->get('huh.request');
-        $username = $request->getPost('username') ? $request->getPost('username') : $request->getPost('email');
+        $username = $this->request->getPost('username') ? $this->request->getPost('username') : $this->request->getPost('email');
 
         // check if user has a subscribtion
         if ($module->iso_checkForExitingSubscription && null === ($objSubscription = $this->framework->getAdapter(SubscriptionModel::class)->findBy('email', $username))) {

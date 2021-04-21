@@ -57,7 +57,7 @@ class ModuleContainer
 
         switch ($objModule->type) {
             case 'iso_direct_checkout':
-                if (\Contao\System::getContainer()->get('huh.utils.container')->isBundleActive('HeimrichHannotContaoIsotopeBundle')) {
+                if (class_exists('HeimrichHannot\IsotopeBundle\HeimrichHannotIsotopeBundle')) {
                     $dca['subpalettes']['iso_addSubscription'] = str_replace('iso_subscriptionArchive', 'iso_subscriptionArchive,iso_addSubscriptionCheckbox', $GLOBALS['TL_DCA']['tl_module']['subpalettes']['iso_addSubscription']);
                 }
             // no break!
