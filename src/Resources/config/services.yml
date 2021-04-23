@@ -5,3 +5,7 @@ services:
 
   HeimrichHannot\IsotopeSubscriptionsBundle\:
     resource: '../../{Controller,DataContainer,Manager}/*'
+
+  HeimrichHannot\IsotopeSubscriptionsBundle\Manager\:
+    resource: '../../Manager/*'
+    public: true

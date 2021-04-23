@@ -3,7 +3,8 @@
 /**
  * Backend modules
  */
-\Contao\System::getContainer()->get(\HeimrichHannot\UtilsBundle\Arrays\ArrayUtil::class)->insertInArrayByName($GLOBALS['BE_MOD']['isotope'], 'iso_products', [
+\Contao\System::getContainer()->get(\HeimrichHannot\UtilsBundle\Arrays\ArrayUtil::class)->insertInArrayByName(
+    $GLOBALS['BE_MOD']['isotope'], 'iso_products', [
     'iso_subscriptions' => [
         'tables'     => ['tl_iso_subscription_archive', 'tl_iso_subscription'],
         'export_xls' => ['huh.exporter.action.backendexport', 'export'],
@@ -19,10 +20,6 @@ $GLOBALS['ISO_HOOKS']['preCheckout']['checkForExistingSubscription']            
     [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'checkForExistingSubscription'];
 $GLOBALS['ISO_HOOKS']['postCheckout']['addSubscriptions']                       =
     [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'addSubscriptions'];
-$GLOBALS['TL_HOOKS']['preLoginRegistration']['checkUsernameForIsoSubscription'] =
-    [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'checkUsernameForIsoSubscription'];
-$GLOBALS['TL_HOOKS']['preRegistration']['checkUsernameForIsoSubscription']      =
-    [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'checkUsernameForIsoSubscription'];
 
 /**
  * Notification center notification types

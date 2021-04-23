@@ -10,7 +10,6 @@ namespace HeimrichHannot\IsotopeSubscriptionsBundle\Manager;
 
 use Contao\Config;
 use Contao\Controller;
-use Contao\MemberModel;
 use Contao\Module;
 use Contao\PageModel;
 use Contao\StringUtil;
@@ -240,33 +239,5 @@ class SubscriptionManager
 
         $arrDca['palettes']['default'] = rtrim($arrDca['palettes']['default'], ',');
         $arrDca['palettes']['default'] .= ';'.$strInitialPalette;
-    }
-
-    /**
-     * @param $module
-     */
-    public function checkUsernameForIsoSubscription($module)
-    {
-        $username = $this->request->getPost('username') ? $this->request->getPost('username') : $this->request->getPost('email');
-
-        // check if user has a subscribtion
-        if ($module->iso_checkForExitingSubscription && null === ($objSubscription = $this->framework->getAdapter(SubscriptionModel::class)->findBy('email', $username))) {
-            $_SESSION['LOGIN_ERROR'] = $GLOBALS['TL_LANG']['MSC']['noAbonement'];
-            Controller::reload();
-        }
-
-        if (null !== ($objMember = $this->framework->getAdapter(MemberModel::class)->findByUsername($username))) {
-            $arrGroups = StringUtil::deserialize($objMember->groups);
-
-            foreach (StringUtil::deserialize($module->reg_groups) as $group) {
-                if (!\in_array($group, $arrGroups, true)) {
-                    $arrGroups[] = $group;
-                }
-            }
-
-            $objMember->groups = serialize($arrGroups);
-
-            $objMember->save();
-        }
     }
 }

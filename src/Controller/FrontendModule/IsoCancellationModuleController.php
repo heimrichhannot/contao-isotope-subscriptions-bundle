@@ -21,9 +21,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @FrontendModule(category="isotope_subscriptions")
+ * @FrontendModule(IsoCancellationModuleController::TYPE,category="isotope_subscriptions")
  */
-class IsoCancellationFrontendModuleController extends AbstractFrontendModuleController
+class IsoCancellationModuleController extends AbstractFrontendModuleController
 {
     const TYPE = 'iso_cancellation';
 

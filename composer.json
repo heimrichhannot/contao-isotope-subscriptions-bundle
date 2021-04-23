@@ -1,7 +1,7 @@
 {
   "name": "heimrichhannot/contao-isotope-subscriptions-bundle",
   "type": "contao-bundle",
-  "description": "Enhancements for isotope shop",
+  "description": "This bundle offers the possibility to subscribe to certain product types within the isotope ecommerce system.",
   "license": "LGPL-3.0-or-later",
   "require": {
     "php": "^7.1",

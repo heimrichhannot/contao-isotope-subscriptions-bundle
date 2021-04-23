@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @FrontendModule(category="isotope_subscriptions")
+ * @FrontendModule(IsoActivationModuleController::TYPE,category="isotope_subscriptions")
  */
-class IsoActivationFrontendModuleController extends AbstractFrontendModuleController
+class IsoActivationModuleController extends AbstractFrontendModuleController
 {
     const TYPE = 'iso_activation';
 
@@ -37,10 +37,6 @@ class IsoActivationFrontendModuleController extends AbstractFrontendModuleContro
 
     protected function getResponse(Template $template, ModuleModel $module, Request $request): ?Response
     {
-        if (!($token = $request->get('token'))) {
-            return new Response('');
-        }
-
         $subscription = $this->modelUtil->findOneModelInstanceBy('tl_iso_subscription', ['tl_iso_subscription.activation=?'], [$token]);
 
         if (null !== $subscription) {
