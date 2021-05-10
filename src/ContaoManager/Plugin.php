@@ -28,8 +28,8 @@ class Plugin implements BundlePluginInterface, ConfigPluginInterface
             ContaoCoreBundle::class,
         ];
 
-        if (class_exists('HeimrichHannot\IsotopeBundle\HeimrichHannotIsotopeBundle')) {
-            $loadAfter[] = \HeimrichHannot\IsotopeBundle\HeimrichHannotIsotopeBundle::class;
+        if (class_exists('HeimrichHannot\IsotopeExtensionBundle\HeimrichHannotIsotopeExtensionBundle')) {
+            $loadAfter[] = \HeimrichHannot\IsotopeExtensionBundle\HeimrichHannotIsotopeExtensionBundle::class;
         }
 
         return [

@@ -11,19 +11,14 @@ namespace HeimrichHannot\IsotopeSubscriptionsBundle\Manager;
 use Contao\Config;
 use Contao\Controller;
 use Contao\Module;
-use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
-use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchiveModel;
 use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionModel;
 use HeimrichHannot\RequestBundle\Component\HttpFoundation\Request;
 use HeimrichHannot\UtilsBundle\Arrays\ArrayUtil;
 use HeimrichHannot\UtilsBundle\Model\ModelUtil;
 use HeimrichHannot\UtilsBundle\Url\UrlUtil;
-use Isotope\Model\Product\Standard;
 use Isotope\Model\ProductCollection\Order;
-use NotificationCenter\Model\Notification;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class SubscriptionManager
@@ -62,21 +57,44 @@ class SubscriptionManager
         $items = $order->getItems();
 
         foreach ($items as $item) {
+            $config = null;
+
             switch ($module->iso_direct_checkout_product_mode) {
                 case 'product_type':
-                    $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product_type', $this->framework->getAdapter(Standard::class)->findAvailableByIdOrAlias($item->product_id)->type);
+                    $product = $this->modelUtil->findModelInstanceByPk('tl_iso_product', $item->product_id);
+
+                    if (null === $product) {
+                        continue 2;
+                    }
+
+                    foreach (StringUtil::deserialize($module->iso_direct_checkout_product_types, true) as $row) {
+                        if ($row['productType'] === $product->type) {
+                            $config = $row;
+
+                            break;
+                        }
+                    }
 
                     break;
 
                 default:
-                    $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product', $item->product_id);
+                    foreach (StringUtil::deserialize($module->iso_direct_checkout_products, true) as $row) {
+                        if ($row['product'] === $item->product_id) {
+                            $config = $row;
+
+                            break;
+                        }
+                    }
 
                     break;
             }
 
-            if ((!$objFieldpalette->iso_addSubscriptionCheckbox || \Input::post('subscribeToProduct_'.$item->product_id)) && $objFieldpalette->iso_addSubscription && $objFieldpalette->iso_subscriptionArchive
-                && null !== ($objSubscriptionArchive = $this->framework->getAdapter(SubscriptionArchiveModel::class)->findByPk($objFieldpalette->iso_subscriptionArchive))) {
-                if (null !== $this->framework->getAdapter(SubscriptionModel::class)->findBy(['email=?', 'pid=?', 'disable!=?'], [$email, $objSubscriptionArchive->id, 1])) {
+            if (null !== $config && (!$config['iso_addSubscriptionCheckbox'] || $this->request->getPost('subscribeToProduct_'.$item->product_id)) &&
+                $config['iso_addSubscription'] && $config['iso_subscriptionArchive']
+                && null !== ($archive = $this->modelUtil->findModelInstanceByPk('tl_iso_subscription_archive', $config['iso_subscriptionArchive']))) {
+                if (null !== $this->modelUtil->findModelInstancesBy('tl_iso_subscription', [
+                    'tl_iso_subscription.email=?', 'tl_iso_subscription.pid=?', 'tl_iso_subscription.disable!=?',
+                    ], [$email, $archive->id, 1])) {
                     $_SESSION['ISO_ERROR'][] = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionAlreadyExists'], $email, $item->name);
 
                     return false;
@@ -105,59 +123,81 @@ class SubscriptionManager
         $module = $this->modelUtil->findModelInstanceByPk('tl_module', $module);
 
         foreach ($items as $item) {
+            $config = null;
+
             switch ($module->iso_direct_checkout_product_mode) {
                 case 'product_type':
-                    $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product_type', $this->framework->getAdapter(Standard::class)->findPublishedByIdOrAlias($item->product_id)->type);
+                    $product = $this->modelUtil->findModelInstanceByPk('tl_iso_product', $item->product_id);
+
+                    if (null === $product) {
+                        continue 2;
+                    }
+
+                    foreach (StringUtil::deserialize($module->iso_direct_checkout_product_types, true) as $row) {
+                        if ($row['productType'] === $product->type) {
+                            $config = $row;
+
+                            break;
+                        }
+                    }
 
                     break;
 
                 default:
-                    $objFieldpalette = $this->framework->getAdapter(FieldPaletteModel::class)->findBy('iso_direct_checkout_product', $item->product_id);
+                    foreach (StringUtil::deserialize($module->iso_direct_checkout_products, true) as $row) {
+                        if ($row['product'] === $item->product_id) {
+                            $config = $row;
+
+                            break;
+                        }
+                    }
 
                     break;
             }
 
-            if (null !== $objFieldpalette && $objFieldpalette->iso_addSubscription) {
-                if ($objFieldpalette->iso_subscriptionArchive && (!$objFieldpalette->iso_addSubscriptionCheckbox || \Input::post('subscribeToProduct_'.$item->product_id))) {
-                    $objSubscription = $this->framework->getAdapter(SubscriptionModel::class)->findOneBy(['email=?', 'pid=?', 'activation!=?', 'disable=?'], [$email, $objFieldpalette->iso_subscriptionArchive, '', 1]);
+            if (null !== $config && $config['iso_addSubscription']) {
+                if ($config['iso_subscriptionArchive'] && (!$config['iso_addSubscriptionCheckbox'] || $this->request->getPost('subscribeToProduct_'.$item->product_id))) {
+                    $subscription = $this->modelUtil->findOneModelInstanceBy('tl_iso_subscription', [
+                            'tl_iso_subscription.email=?', 'tl_iso_subscription.pid=?', 'activation!=?', 'tl_iso_subscription.disable=?',
+                        ], [$email, $config['iso_subscriptionArchive'], '', 1]);
 
-                    if (!$objSubscription) {
-                        $objSubscription = new SubscriptionModel();
+                    if (!$subscription) {
+                        $subscription = new SubscriptionModel();
                     }
 
-                    if ($objFieldpalette->iso_addActivation) {
+                    if ($config['iso_addActivation']) {
                         $strToken = md5(uniqid(mt_rand(), true));
 
-                        $objSubscription->disable = true;
-                        $objSubscription->activation = $strToken;
+                        $subscription->disable = true;
+                        $subscription->activation = $strToken;
 
-                        if (null !== ($objNotification = $this->framework->getAdapter(Notification::class)->findByPk($objFieldpalette->iso_activationNotification))) {
-                            if ($objFieldpalette->iso_activationJumpTo
-                                && null !== ($objPageRedirect = $this->framework->getAdapter(PageModel::class)->findPublishedById($objFieldpalette->iso_activationJumpTo))) {
+                        if (null !== ($notification = $this->modelUtil->findModelInstanceByPk('tl_nc_notification', $config['iso_activationNotification']))) {
+                            if ($config['iso_activationJumpTo']
+                                && null !== ($objPageRedirect = $this->modelUtil->callModelMethod('tl_page', 'findPublishedById', $config['iso_activationJumpTo']))) {
                                 $tokens['link'] = $this->urlUtil->addQueryString('token='.$strToken, $objPageRedirect->getAbsoluteUrl());
                             }
 
-                            $objNotification->send($tokens, $GLOBALS['TL_LANGUAGE']);
+                            $notification->send($tokens, $GLOBALS['TL_LANGUAGE']);
                         }
                     }
 
-                    $arrAddressFields = Config::get('iso_addressFields');
+                    $addressFields = Config::get('iso_addressFields');
 
-                    if (null === $arrAddressFields) {
-                        $arrAddressFields = serialize(array_keys($this->getIsotopeAddressFields()));
+                    if (null === $addressFields) {
+                        $addressFields = serialize(array_keys($this->getIsotopeAddressFields()));
                     }
 
-                    foreach (StringUtil::deserialize($arrAddressFields, true) as $strName) {
-                        $objSubscription->{$strName} = $address->{$strName};
+                    foreach (StringUtil::deserialize($addressFields, true) as $strName) {
+                        $subscription->{$strName} = $address->{$strName};
                     }
 
-                    $objSubscription->email = $email;
-                    $objSubscription->pid = $objFieldpalette->iso_subscriptionArchive;
-                    $objSubscription->tstamp = $objSubscription->dateAdded = time();
-                    $objSubscription->quantity = \Input::post('quantity');
-                    $objSubscription->order_id = $order->id;
+                    $subscription->email = $email;
+                    $subscription->pid = $config['iso_subscriptionArchive'];
+                    $subscription->tstamp = $subscription->dateAdded = time();
+                    $subscription->quantity = $this->request->getPost('quantity');
+                    $subscription->order_id = $order->id;
 
-                    $objSubscription->save();
+                    $subscription->save();
                 }
             }
         }
