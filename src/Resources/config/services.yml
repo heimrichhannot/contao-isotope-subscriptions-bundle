@@ -5,4 +5,4 @@ services:
     public: true
 
   HeimrichHannot\IsotopeSubscriptionsBundle\:
-    resource: '../../{Controller,DataContainer,Manager}/*'
+    resource: '../../{Controller,DataContainer,EventListener,Manager}/*'

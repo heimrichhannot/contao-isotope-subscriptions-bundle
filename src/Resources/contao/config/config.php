@@ -12,7 +12,7 @@
 ]);
 
 /**
- * Hooks
+ * Isotope hooks
  */
 $GLOBALS['ISO_HOOKS']['preCheckout']['setCheckoutModuleIdSubscriptions']        =
     [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'setCheckoutModuleIdSubscriptions'];
