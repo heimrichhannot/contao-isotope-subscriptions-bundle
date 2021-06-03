@@ -68,7 +68,7 @@ class SubscriptionManager
                     }
 
                     foreach (StringUtil::deserialize($module->iso_direct_checkout_product_types, true) as $row) {
-                        if ($row['productType'] === $product->type) {
+                        if ($row['iso_direct_checkout_product_type'] === $product->type) {
                             $config = $row;
 
                             break;
@@ -79,7 +79,7 @@ class SubscriptionManager
 
                 default:
                     foreach (StringUtil::deserialize($module->iso_direct_checkout_products, true) as $row) {
-                        if ($row['product'] === $item->product_id) {
+                        if ($row['iso_direct_checkout_product'] === $item->product_id) {
                             $config = $row;
 
                             break;
@@ -134,7 +134,7 @@ class SubscriptionManager
                     }
 
                     foreach (StringUtil::deserialize($module->iso_direct_checkout_product_types, true) as $row) {
-                        if ($row['productType'] === $product->type) {
+                        if ($row['iso_direct_checkout_product_type'] === $product->type) {
                             $config = $row;
 
                             break;
@@ -145,7 +145,7 @@ class SubscriptionManager
 
                 default:
                     foreach (StringUtil::deserialize($module->iso_direct_checkout_products, true) as $row) {
-                        if ($row['product'] === $item->product_id) {
+                        if ($row['iso_direct_checkout_product'] === $item->product_id) {
                             $config = $row;
 
                             break;
@@ -194,7 +194,7 @@ class SubscriptionManager
                     $subscription->email = $email;
                     $subscription->pid = $config['iso_subscriptionArchive'];
                     $subscription->tstamp = $subscription->dateAdded = time();
-                    $subscription->quantity = $this->request->getPost('quantity');
+                    $subscription->quantity = $this->request->getPost('quantity_'.$item->product_id);
                     $subscription->order_id = $order->id;
 
                     $subscription->save();

@@ -37,6 +37,12 @@ class IsoActivationModuleController extends AbstractFrontendModuleController
 
     protected function getResponse(Template $template, ModuleModel $module, Request $request): ?Response
     {
+        if (!($token = $request->get('token'))) {
+            $template->error = $GLOBALS['TL_LANG']['MSC']['iso_subscriptionTokenNotFound'];
+
+            return $template->getResponse();
+        }
+
         $subscription = $this->modelUtil->findOneModelInstanceBy('tl_iso_subscription', ['tl_iso_subscription.activation=?'], [$token]);
 
         if (null !== $subscription) {
@@ -54,7 +60,7 @@ class IsoActivationModuleController extends AbstractFrontendModuleController
                 $jumpTo = $this->modelUtil->findModelInstanceByPk('tl_page', $module->jumpTo);
 
                 if (null !== $jumpTo) {
-                    throw new RedirectResponseException($jumpTo->getFrontendUrl());
+                    throw new RedirectResponseException('/'.$jumpTo->getFrontendUrl());
                 }
             }
         } else {
