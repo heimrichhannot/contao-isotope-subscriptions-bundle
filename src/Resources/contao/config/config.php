@@ -28,6 +28,23 @@ $notifications = &$GLOBALS['NOTIFICATION_CENTER']['NOTIFICATION_TYPE']['isotope'
 
 $notifications['iso_subscription_activation']                 = $notifications['iso_order_status_change'];
 $notifications['iso_subscription_activation']['email_text'][] = 'link';
+$notifications['iso_subscription_activation']['email_html'][] = 'link';
+
+$cancellationType = System::getContainer()->get(\HeimrichHannot\UtilsBundle\Dca\DcaUtil::class)
+    ->getNewNotificationTypeArray(true);
+
+$cancellationType['email_text'][] = 'link';
+$cancellationType['email_html'][] = 'link';
+
+foreach ($cancellationType as $strField => $arrTokens) {
+    $cancellationType[$strField] = array_unique(array_merge(['form_*'], $arrTokens));
+}
+
+System::getContainer()->get(\HeimrichHannot\UtilsBundle\Dca\DcaUtil::class)->activateNotificationType(
+    'isotope',
+    'iso_subscription_cancellation',
+    $cancellationType
+);
 
 /**
  * Models

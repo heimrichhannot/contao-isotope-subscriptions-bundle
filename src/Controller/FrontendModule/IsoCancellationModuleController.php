@@ -13,10 +13,11 @@ use Contao\CoreBundle\Exception\RedirectResponseException;
 use Contao\CoreBundle\ServiceAnnotation\FrontendModule;
 use Contao\ModuleModel;
 use Contao\PageModel;
-use Contao\StringUtil;
 use Contao\Template;
 use Contao\Widget;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager;
 use HeimrichHannot\UtilsBundle\Model\ModelUtil;
+use HeimrichHannot\UtilsBundle\Url\UrlUtil;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -30,14 +31,54 @@ class IsoCancellationModuleController extends AbstractFrontendModuleController
     /**
      * @var ModelUtil
      */
-    protected ModelUtil $modelUtil;
+    protected ModelUtil           $modelUtil;
+    protected UrlUtil             $urlUtil;
+    protected SubscriptionManager $subscriptionManager;
 
-    public function __construct(ModelUtil $modelUtil)
+    public function __construct(ModelUtil $modelUtil, UrlUtil $urlUtil, SubscriptionManager $subscriptionManager)
     {
         $this->modelUtil = $modelUtil;
+        $this->urlUtil = $urlUtil;
+        $this->subscriptionManager = $subscriptionManager;
     }
 
     protected function getResponse(Template $template, ModuleModel $module, Request $request): ?Response
+    {
+        if ($token = $request->get('token')) {
+            return $this->cancel($token, $template, $module, $request);
+        }
+
+        return $this->renderForm($template, $module, $request);
+    }
+
+    protected function cancel(string $token, Template $template, ModuleModel $module, Request $request): ?Response
+    {
+        $subscription = $this->modelUtil->findOneModelInstanceBy('tl_iso_subscription', ['tl_iso_subscription.activation=?'], [$token]);
+
+        if (null !== $subscription) {
+            $data = $subscription->row();
+
+            $subscription->delete();
+
+            $this->subscriptionManager->addPrivacyProtocolEntry($module->iso_secondPrivacyEntryConfig, $module, $data);
+
+            // success message
+            $template->success = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionCancelledSuccessfully'], $subscription->email);
+
+            /** @var PageModel $jumpTo */
+            $jumpTo = $this->modelUtil->findModelInstanceByPk('tl_page', $module->jumpTo);
+
+            if (null !== $jumpTo) {
+                throw new RedirectResponseException('/'.$jumpTo->getFrontendUrl());
+            }
+        } else {
+            $template->error = $GLOBALS['TL_LANG']['MSC']['iso_subscriptionTokenNotFound'];
+        }
+
+        return $template->getResponse();
+    }
+
+    protected function renderForm(Template $template, ModuleModel $module, Request $request): ?Response
     {
         $fields = [
             'email' => [
@@ -72,42 +113,64 @@ class IsoCancellationModuleController extends AbstractFrontendModuleController
             }
 
             if (!$this->blnDoNotSubmit) {
-                // cancel subscription
                 $email = $request->get('email');
-                $archives = StringUtil::deserialize($module->iso_cancellationArchives, true);
-                $noSuccess = false;
+                $archive = $module->iso_cancellationArchive;
 
-                foreach ($archives as $archive) {
-                    $subscription = $this->modelUtil->findModelInstancesBy('tl_iso_subscription', [
-                        'tl_iso_subscription.email=?', 'tl_iso_subscription.pid=?',
-                    ], [$email, $archive]);
+                $subscription = $this->modelUtil->findModelInstancesBy('tl_iso_subscription', [
+                    'tl_iso_subscription.email=?', 'tl_iso_subscription.pid=?',
+                ], [$email, $archive]);
 
-                    if (null === ($subscription)) {
-                        if (1 == \count($archives)) {
-                            $template->error = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionDoesNotExist'], $email, $framework->getAdapter(SubscriptionArchiveModel::class)->findByPk($archive)->title);
-                            $noSuccess = true;
+                if (null === ($subscription)) {
+                    $template->error = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionDoesNotExist'], $email);
+                } else {
+                    if ($module->iso_addActivation) {
+                        $tokens = [
+                            'form_email' => $subscription->email,
+                        ];
+
+                        $token = md5(uniqid(mt_rand(), true));
+
+                        $subscription->activation = $token;
+                        $subscription->save();
+
+                        if (null !== ($notification = $this->modelUtil->findModelInstanceByPk('tl_nc_notification', $module->iso_activationNotification))) {
+                            if ($module->iso_activationJumpTo
+                                && null !== ($objPageRedirect = $this->modelUtil->callModelMethod('tl_page', 'findPublishedById', $module->iso_activationJumpTo))) {
+                                $tokens['link'] = $this->urlUtil->addQueryString('token='.$token, $objPageRedirect->getAbsoluteUrl());
+                            }
+
+                            $notification->send($tokens, $GLOBALS['TL_LANGUAGE']);
+
+                            // privacy
+                            $this->subscriptionManager->addPrivacyProtocolEntry($module->iso_privacyEntryConfig, $module, $subscription->row());
+
+                            // redirect
+                            /** @var PageModel $jumpTo */
+                            $jumpTo = $this->modelUtil->findModelInstanceByPk('tl_page', $module->iso_activationLinkSentJumpTo);
+
+                            if (null !== $jumpTo) {
+                                throw new RedirectResponseException('/'.$jumpTo->getFrontendUrl());
+                            }
                         }
-
-                        break;
-                    }
-
-                    $subscription->delete();
-                }
-
-                if (!$noSuccess) {
-                    // success message
-                    if (\count($archives) > 1) {
-                        $template->success = $GLOBALS['TL_LANG']['MSC']['iso_subscriptionsCancelledSuccessfully'];
                     } else {
-                        $template->success = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionCancelledSuccessfully'], $email, $framework->getAdapter(SubscriptionArchiveModel::class)->findByPk($archives[0])->title);
-                    }
+                        $data = $subscription->row();
 
-                    // redirect
-                    /** @var PageModel $jumpTo */
-                    $jumpTo = $this->modelUtil->findModelInstanceByPk('tl_page', $module->jumpTo);
+                        // no activation -> delete immediately
+                        $subscription->delete();
 
-                    if (null !== $jumpTo) {
-                        throw new RedirectResponseException($jumpTo->getFrontendUrl());
+                        // success message
+                        $template->success = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionCancelledSuccessfully'], $email);
+
+                        // privacy
+                        $this->subscriptionManager->addPrivacyProtocolEntry($module->iso_privacyEntryConfig, $module, $data);
+
+                        // redirect
+                        /** @var PageModel $jumpTo */
+                        $jumpTo = $this->modelUtil->findModelInstanceByPk('tl_page', $module->jumpTo);
+
+                        if (null !== $jumpTo) {
+                            throw new RedirectResponseException('/'.$jumpTo->getFrontendUrl());
+                        }
                     }
                 }
             }

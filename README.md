@@ -5,7 +5,7 @@ This bundle offers the possibility to subscribe to certain product types within 
 ## Features
 
 - opt-in via activation link in an email
-- cancel subscriptions again
+- cancel subscriptions again (opt out and double opt out supported)
 - subscribe in isotope direct checkout modules (see [heimrichhannot/contao-isotope-extension-bundle](https://github.com/heimrichhannot/contao-isotope-extension-bundle))
   - of course, you can also create a frontend module yourself which uses the methods in `SubscriptionManager`
 

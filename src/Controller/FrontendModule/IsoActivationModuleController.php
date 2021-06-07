@@ -14,6 +14,7 @@ use Contao\CoreBundle\ServiceAnnotation\FrontendModule;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\Template;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager;
 use HeimrichHannot\UtilsBundle\Model\ModelUtil;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,11 +29,13 @@ class IsoActivationModuleController extends AbstractFrontendModuleController
     /**
      * @var ModelUtil
      */
-    protected ModelUtil $modelUtil;
+    protected ModelUtil           $modelUtil;
+    protected SubscriptionManager $subscriptionManager;
 
-    public function __construct(ModelUtil $modelUtil)
+    public function __construct(ModelUtil $modelUtil, SubscriptionManager $subscriptionManager)
     {
         $this->modelUtil = $modelUtil;
+        $this->subscriptionManager = $subscriptionManager;
     }
 
     protected function getResponse(Template $template, ModuleModel $module, Request $request): ?Response
@@ -54,6 +57,8 @@ class IsoActivationModuleController extends AbstractFrontendModuleController
                 $template->success = $GLOBALS['TL_LANG']['MSC']['iso_subscriptionActivatedSuccessfully'];
                 $subscription->activation = $subscription->disable = '';
                 $subscription->save();
+
+                $this->subscriptionManager->addPrivacyProtocolEntry($module->iso_privacyEntryConfig, $module, $subscription->row());
 
                 // redirect
                 /** @var PageModel $jumpTo */

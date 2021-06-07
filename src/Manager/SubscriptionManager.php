@@ -198,6 +198,8 @@ class SubscriptionManager
                     $subscription->order_id = $order->id;
 
                     $subscription->save();
+
+                    $this->addPrivacyProtocolEntry($config['iso_privacyEntryConfig'], $module, $subscription->row());
                 }
             }
         }
@@ -279,5 +281,21 @@ class SubscriptionManager
 
         $arrDca['palettes']['default'] = rtrim($arrDca['palettes']['default'], ',');
         $arrDca['palettes']['default'] .= ';'.$strInitialPalette;
+    }
+
+    public function addPrivacyProtocolEntry($config, $module, $data)
+    {
+        if (!class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle')) {
+            return;
+        }
+
+        $protocolManager = System::getContainer()->get(\HeimrichHannot\PrivacyBundle\Manager\ProtocolManager::class);
+
+        $protocolManager->addEntryFromModuleByConfig(
+            $config,
+            $data,
+            $module,
+            'heimrichhannot/contao-isotope-subscriptions-bundle'
+        );
     }
 }
