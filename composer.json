@@ -4,25 +4,12 @@
   "description": "This bundle offers the possibility to subscribe to certain product types within the isotope ecommerce system.",
   "license": "LGPL-3.0-or-later",
   "require": {
-    "php": "^7.1",
+    "php": "^7.4 || ^8.0",
     "contao/core-bundle": "^4.9",
     "isotope/isotope-core": "^2.7",
     "heimrichhannot/contao-utils-bundle": "^2.191",
     "heimrichhannot/contao-request-bundle": "^1.2",
     "heimrichhannot/contao-exporter-bundle": "~0.9"
-  },
-  "minimum-stability": "beta",
-  "require-dev": {
-    "contao/test-case": "^1.1",
-    "contao/manager-plugin": "^2.0",
-    "friendsofphp/php-cs-fixer": "^2.2",
-    "phpunit/phpunit": "^6.5",
-    "phpunit/phpunit-mock-objects": "^4.0|^5.0",
-    "phpunit/php-token-stream": "^1.4|^2.0|^3.0",
-    "php-http/guzzle6-adapter": "^1.1",
-    "php-http/message-factory": "^1.0.2",
-    "satooshi/php-coveralls": "^2.0",
-    "symfony/phpunit-bridge": "^3.2"
   },
   "autoload": {
     "psr-4": {
@@ -37,14 +24,6 @@
       "src/Resources/contao/languages/",
       "src/Resources/contao/templates/"
     ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "HeimrichHannot\\IsotopeSubscriptionsBundle\\Test\\": "tests/"
-    }
-  },
-  "config": {
-    "preferred-install": "dist"
   },
   "extra": {
     "contao-manager-plugin": "HeimrichHannot\\IsotopeSubscriptionsBundle\\ContaoManager\\Plugin"

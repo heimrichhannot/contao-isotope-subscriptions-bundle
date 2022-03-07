@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2021 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -26,9 +26,6 @@ class IsoActivationModuleController extends AbstractFrontendModuleController
 {
     const TYPE = 'iso_activation';
 
-    /**
-     * @var ModelUtil
-     */
     protected ModelUtil           $modelUtil;
     protected SubscriptionManager $subscriptionManager;
 
@@ -58,7 +55,7 @@ class IsoActivationModuleController extends AbstractFrontendModuleController
                 $subscription->activation = $subscription->disable = '';
                 $subscription->save();
 
-                $this->subscriptionManager->addPrivacyProtocolEntry($module->iso_privacyEntryConfig, $module, $subscription->row());
+                $this->subscriptionManager->addPrivacyProtocolEntry((int) $module->iso_privacyEntryConfig, $module, $subscription->row());
 
                 // redirect
                 /** @var PageModel $jumpTo */

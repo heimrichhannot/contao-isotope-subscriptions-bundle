@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2022-03-07
+- Changed: allow php 8
+- Fixed: removed unnecessary composer.json content
+- Fixed: min php version to low
+- Fixed: type exceptions when privacy protocol is written
+
 ## [2.0.0] - 2021-06-07
 
 - refactoring for contao 4.9

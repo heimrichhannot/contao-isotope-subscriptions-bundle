@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2021 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -28,9 +28,6 @@ class IsoCancellationModuleController extends AbstractFrontendModuleController
 {
     const TYPE = 'iso_cancellation';
 
-    /**
-     * @var ModelUtil
-     */
     protected ModelUtil           $modelUtil;
     protected UrlUtil             $urlUtil;
     protected SubscriptionManager $subscriptionManager;
@@ -60,7 +57,7 @@ class IsoCancellationModuleController extends AbstractFrontendModuleController
 
             $subscription->delete();
 
-            $this->subscriptionManager->addPrivacyProtocolEntry($module->iso_secondPrivacyEntryConfig, $module, $data);
+            $this->subscriptionManager->addPrivacyProtocolEntry((int) $module->iso_secondPrivacyEntryConfig, $module, $data);
 
             // success message
             $template->success = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionCancelledSuccessfully'], $subscription->email);
@@ -142,7 +139,7 @@ class IsoCancellationModuleController extends AbstractFrontendModuleController
                             $notification->send($tokens, $GLOBALS['TL_LANGUAGE']);
 
                             // privacy
-                            $this->subscriptionManager->addPrivacyProtocolEntry($module->iso_privacyEntryConfig, $module, $subscription->row());
+                            $this->subscriptionManager->addPrivacyProtocolEntry((int) $module->iso_privacyEntryConfig, $module, $subscription->row());
 
                             // redirect
                             /** @var PageModel $jumpTo */
@@ -162,7 +159,7 @@ class IsoCancellationModuleController extends AbstractFrontendModuleController
                         $template->success = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionCancelledSuccessfully'], $email);
 
                         // privacy
-                        $this->subscriptionManager->addPrivacyProtocolEntry($module->iso_privacyEntryConfig, $module, $data);
+                        $this->subscriptionManager->addPrivacyProtocolEntry((int) $module->iso_privacyEntryConfig, $module, $data);
 
                         // redirect
                         /** @var PageModel $jumpTo */

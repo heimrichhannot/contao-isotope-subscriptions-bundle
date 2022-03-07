@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2021 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -199,7 +199,7 @@ class SubscriptionManager
 
                     $subscription->save();
 
-                    $this->addPrivacyProtocolEntry($config['iso_privacyEntryConfig'], $module, $subscription->row());
+                    $this->addPrivacyProtocolEntry((int) $config['iso_privacyEntryConfig'], $module, $subscription->row());
                 }
             }
         }
@@ -283,7 +283,7 @@ class SubscriptionManager
         $arrDca['palettes']['default'] .= ';'.$strInitialPalette;
     }
 
-    public function addPrivacyProtocolEntry($config, $module, $data)
+    public function addPrivacyProtocolEntry(int $config, $module, array $data)
     {
         if (!class_exists('\HeimrichHannot\PrivacyBundle\HeimrichHannotPrivacyBundle')) {
             return;
