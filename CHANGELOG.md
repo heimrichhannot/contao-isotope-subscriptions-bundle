@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.1] - 2022-06-15
+- Fixed: user rights exception
+
 ## [2.1.0] - 2022-03-07
 - Changed: allow php 8
 - Fixed: removed unnecessary composer.json content
