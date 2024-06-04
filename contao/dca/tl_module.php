@@ -1,5 +1,8 @@
 <?php
 
+use HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule\IsoActivationModuleController;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule\IsoCancellationModuleController;
+
 $dca = &$GLOBALS['TL_DCA']['tl_module'];
 
 /**
@@ -7,10 +10,10 @@ $dca = &$GLOBALS['TL_DCA']['tl_module'];
  */
 $dca['palettes']['__selector__'][] = 'iso_addActivation';
 
-$dca['palettes'][\HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule\IsoActivationModuleController::TYPE] =
+$dca['palettes'][IsoActivationModuleController::TYPE] =
     '{title_legend},name,headline,type;{redirect_legend],jumpTo;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
 
-$dca['palettes'][\HeimrichHannot\IsotopeSubscriptionsBundle\Controller\FrontendModule\IsoCancellationModuleController::TYPE] =
+$dca['palettes'][IsoCancellationModuleController::TYPE] =
     '{title_legend},name,headline,type;{config_legend},iso_cancellationArchive,iso_addActivation;{redirect_legend],jumpTo;' .
     '{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
 
