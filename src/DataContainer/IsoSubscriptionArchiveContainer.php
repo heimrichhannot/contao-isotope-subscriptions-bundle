@@ -15,24 +15,22 @@ use Contao\Database;
 use Contao\Image;
 use Contao\Input;
 use Contao\Session;
+use Contao\StringUtil;
 use HeimrichHannot\UtilsBundle\Database\DatabaseUtil;
 use HeimrichHannot\UtilsBundle\Dca\DcaUtil;
 use HeimrichHannot\UtilsBundle\Model\ModelUtil;
+use HeimrichHannot\UtilsBundle\Util\Utils;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class IsoSubscriptionArchiveContainer
 {
-    /**
-     * @var ModelUtil
-     */
-    protected ModelUtil    $modelUtil;
-    protected DcaUtil      $dcaUtil;
-    protected DatabaseUtil $databaseUtil;
+    protected RequestStack $requestStack;
+    protected Utils        $utils;
 
-    public function __construct(ModelUtil $modelUtil, DcaUtil $dcaUtil, DatabaseUtil $databaseUtil)
+    public function __construct(RequestStack $requestStack, Utils $utils)
     {
-        $this->modelUtil = $modelUtil;
-        $this->dcaUtil = $dcaUtil;
-        $this->databaseUtil = $databaseUtil;
+        $this->requestStack = $requestStack;
+        $this->utils = $utils;
     }
 
     /**
@@ -41,7 +39,7 @@ class IsoSubscriptionArchiveContainer
     public function checkPermission()
     {
         $objUser = BackendUser::getInstance();
-        $objSession = Session::getInstance();
+        $objSession = $this->requestStack->getSession();
         $objDatabase = Database::getInstance();
 
         if ($objUser->isAdmin) {
@@ -71,33 +69,48 @@ class IsoSubscriptionArchiveContainer
 
             case 'edit':
                 // Dynamically add the record to the user profile
-                if (!\in_array(Input::get('id'), $root)) {
+                if (\in_array(Input::get('id'), $root)) {
                     $arrNew = $objSession->get('new_records');
 
-                    if (\is_array($arrNew['tl_iso_subscription_archive']) && \in_array(Input::get('id'), $arrNew['tl_iso_subscription_archive'])) {
+                    if (\is_array($arrNew['tl_iso_subscription_archive'] ?? null)
+                        && \in_array(Input::get('id'), $arrNew['tl_iso_subscription_archive'] ?? []))
+                    {
                         // Add permissions on user level
-                        if ('custom' == $objUser->inherit || !$objUser->groups[0]) {
-                            $objUser = $objDatabase->prepare('SELECT subscriptions, subscriptionp FROM tl_user WHERE id=?')->limit(1)->execute($objUser->id);
+                        if ('custom' == $objUser->inherit || !$objUser->groups[0])
+                        {
+                            $objUser = $objDatabase
+                                ->prepare('SELECT subscriptions, subscriptionp FROM tl_user WHERE id=?')
+                                ->limit(1)
+                                ->execute($objUser->id);
 
-                            $arrsubscriptionp = deserialize($objUser->subscriptionp);
+                            $arrSubscriptionP = StringUtil::deserialize($objUser->subscriptionp);
 
-                            if (\is_array($arrsubscriptionp) && \in_array('create', $arrsubscriptionp)) {
-                                $arrsubscriptions = deserialize($objUser->subscriptions);
-                                $arrsubscriptions[] = Input::get('id');
+                            if (\is_array($arrSubscriptionP) && \in_array('create', $arrSubscriptionP))
+                            {
+                                $arrSubscriptions = StringUtil::deserialize($objUser->subscriptions);
+                                $arrSubscriptions[] = Input::get('id');
 
-                                $objDatabase->prepare('UPDATE tl_user SET subscriptions=? WHERE id=?')->execute(serialize($arrsubscriptions), $objUser->id);
+                                $objDatabase->prepare('UPDATE tl_user SET subscriptions=? WHERE id=?')
+                                    ->execute(serialize($arrSubscriptions), $objUser->id);
                             }
                         } // Add permissions on group level
-                        elseif ($objUser->groups[0] > 0) {
-                            $objGroup = $objDatabase->prepare('SELECT subscriptions, subscriptionp FROM tl_user_group WHERE id=?')->limit(1)->execute($objUser->groups[0]);
+                        elseif ($objUser->groups[0] > 0)
+                        {
+                            $objGroup = $objDatabase
+                                ->prepare('SELECT subscriptions, subscriptionp FROM tl_user_group WHERE id=?')
+                                ->limit(1)
+                                ->execute($objUser->groups[0]);
 
-                            $arrsubscriptionp = deserialize($objGroup->subscriptionp);
+                            $arrSubscriptionP = StringUtil::deserialize($objGroup->subscriptionp);
 
-                            if (\is_array($arrsubscriptionp) && \in_array('create', $arrsubscriptionp)) {
-                                $arrsubscriptions = deserialize($objGroup->subscriptions);
-                                $arrsubscriptions[] = Input::get('id');
+                            if (\is_array($arrSubscriptionP) && \in_array('create', $arrSubscriptionP))
+                            {
+                                $arrSubscriptions = StringUtil::deserialize($objGroup->subscriptions);
+                                $arrSubscriptions[] = Input::get('id');
 
-                                $objDatabase->prepare('UPDATE tl_user_group SET subscriptions=? WHERE id=?')->execute(serialize($arrsubscriptions), $objUser->groups[0]);
+                                $objDatabase
+                                    ->prepare('UPDATE tl_user_group SET subscriptions=? WHERE id=?')
+                                    ->execute(serialize($arrSubscriptions), $objUser->groups[0]);
                             }
                         }
 
@@ -111,30 +124,39 @@ class IsoSubscriptionArchiveContainer
             case 'copy':
             case 'delete':
             case 'show':
-                if (!\in_array(Input::get('id'), $root) || ('delete' == Input::get('act') && !$objUser->hasAccess('delete', 'subscriptionp'))) {
-                    Controller::log('Not enough permissions to '.Input::get('act').' subscriptions archive ID "'.Input::get('id').'"', 'tl_iso_subscription_archive checkPermission', TL_ERROR);
+                if (!\in_array(Input::get('id'), $root)
+                    or
+                    'delete' == Input::get('act')
+                    && !$objUser->hasAccess('delete', 'subscriptionp'))
+                {
+                    $this->utils->container()
+                        ->log('Not enough permissions to '.Input::get('act').' subscriptions archive ID "'.Input::get('id').'"',
+                            'tl_iso_subscription_archive checkPermission', 'ERROR');
                     Controller::redirect('contao/main.php?act=error');
                 }
-
                 break;
 
             case 'editAll':
             case 'deleteAll':
             case 'overrideAll':
-                $session = $objSession->getData();
-
-                if ('deleteAll' == Input::get('act') && !$objUser->hasAccess('delete', 'subscriptionp')) {
-                    $session['CURRENT']['IDS'] = [];
-                } else {
-                    $session['CURRENT']['IDS'] = array_intersect($session['CURRENT']['IDS'], $root);
+                if ('deleteAll' == Input::get('act')
+                    && !$objUser->hasAccess('delete', 'subscriptionp'))
+                {
+                    $objSession->set('IDS', []);
                 }
-                $objSession->setData($session);
-
+                else
+                {
+                    $oldIds = $objSession->get('IDS') ?? [];
+                    $objSession->set('IDS', \array_intersect($oldIds, $root));
+                }
                 break;
 
             default:
-                if (\strlen(Input::get('act'))) {
-                    Controller::log('Not enough permissions to '.Input::get('act').' subscription archives', 'tl_iso_subscription_archive checkPermission', TL_ERROR);
+                if (\strlen(Input::get('act')))
+                {
+                    $this->utils->container()
+                        ->log('Not enough permissions to '.Input::get('act').' subscription archives',
+                            'tl_iso_subscription_archive checkPermission', 'ERROR');
                     Controller::redirect('contao/main.php?act=error');
                 }
 
@@ -145,24 +167,54 @@ class IsoSubscriptionArchiveContainer
     /**
      * @Callback(table="tl_iso_subscription_archive", target="list.operations.editheader")
      */
-    public function editHeader($row, $href, $label, $title, $icon, $attributes)
+    public function editHeader($row, $href, $label, $title, $icon, $attributes): string
     {
         $user = BackendUser::getInstance();
 
-        return ($user->isAdmin || \count(preg_grep('/^tl_iso_subscription_archive::/', $user->alexf)) > 0) ? '<a href="'.Controller::addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.Image::getHtml($icon, $label).'</a> ' : Image::getHtml(preg_replace('/\.gif$/i', '_.gif', $icon)).' ';
+        if ($user->isAdmin || \count(\preg_grep('/^tl_iso_subscription_archive::/', $user->alexf)) > 0)
+        {
+            return \sprintf('<a href="%s" title="%s"%s>%s</a> ',
+                Controller::addToUrl($href.'&amp;id='.$row['id']),
+                StringUtil::specialchars($title),
+                $attributes,
+                Image::getHtml($icon, $label)
+            );
+        }
+
+        return Image::getHtml(\preg_replace('/\.gif$/i', '_.gif', $icon)) . ' ';
     }
 
-    public function copyArchive($row, $href, $label, $title, $icon, $attributes)
+    public function copyArchive($row, $href, $label, $title, $icon, $attributes): string
     {
         $user = BackendUser::getInstance();
 
-        return ($user->isAdmin || $user->hasAccess('create', 'subscriptionp')) ? '<a href="'.Controller::addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.Image::getHtml($icon, $label).'</a> ' : Image::getHtml(preg_replace('/\.gif$/i', '_.gif', $icon)).' ';
+        if ($user->isAdmin || $user->hasAccess('create', 'subscriptionp'))
+        {
+            return \sprintf('<a href="%s" title="%s"%s>%s</a> ',
+                Controller::addToUrl($href.'&amp;id='.$row['id']),
+                StringUtil::specialchars($title),
+                $attributes,
+                Image::getHtml($icon, $label)
+            );
+        }
+
+        return Image::getHtml(preg_replace('/\.gif$/i', '_.gif', $icon)) . ' ';
     }
 
-    public function deleteArchive($row, $href, $label, $title, $icon, $attributes)
+    public function deleteArchive($row, $href, $label, $title, $icon, $attributes): string
     {
         $user = BackendUser::getInstance();
 
-        return ($user->isAdmin || $user->hasAccess('delete', 'subscriptionp')) ? '<a href="'.Controller::addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.Image::getHtml($icon, $label).'</a> ' : Image::getHtml(preg_replace('/\.gif$/i', '_.gif', $icon)).' ';
+        if ($user->isAdmin || $user->hasAccess('delete', 'subscriptionp'))
+        {
+            return \sprintf('<a href="%s" title="%s"%s>%s</a> ',
+                Controller::addToUrl($href.'&amp;id='.$row['id']),
+                StringUtil::specialchars($title),
+                $attributes,
+                Image::getHtml($icon, $label)
+            );
+        }
+
+        return Image::getHtml(preg_replace('/\.gif$/i', '_.gif', $icon)) . ' ';
     }
 }

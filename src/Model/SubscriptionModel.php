@@ -8,7 +8,9 @@
 
 namespace HeimrichHannot\IsotopeSubscriptionsBundle\Model;
 
-class SubscriptionModel extends \Contao\Model
+use Contao\Model;
+
+class SubscriptionModel extends Model
 {
     protected static $strTable = 'tl_iso_subscription';
 }
