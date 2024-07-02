@@ -3,9 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [2.2.0] - 2024-07-??
-- Changed: modernized project structure
-- Changed: lift utils bundle version requirement
+- Added: Utils v3 support
 - Fixed: Issues with Contao 4.13
+- Changed: modernized project structure
+- Changed: refactored code
+- Changed: lift utils bundle version requirement
 
 ## [2.1.1] - 2022-06-15
 - Fixed: user rights exception
