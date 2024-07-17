@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.2.0] - 2024-07-??
+## [2.2.0] - 2024-07-17
 - Added: Utils v3 support
 - Fixed: Issues with Contao 4.13
 - Changed: modernized project structure
