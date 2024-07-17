@@ -8,7 +8,9 @@
 
 namespace HeimrichHannot\IsotopeSubscriptionsBundle\Model;
 
-class SubscriptionArchiveModel extends \Contao\Model
+use Contao\Model;
+
+class SubscriptionArchiveModel extends Model
 {
     protected static $strTable = 'tl_iso_subscription_archive';
 }

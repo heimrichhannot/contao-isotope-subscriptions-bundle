@@ -13,6 +13,8 @@ use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
 use Contao\ManagerPlugin\Config\ConfigPluginInterface;
+use Exception;
+use HeimrichHannot\IsotopeExtensionBundle\HeimrichHannotIsotopeExtensionBundle;
 use HeimrichHannot\IsotopeSubscriptionsBundle\HeimrichHannotIsotopeSubscriptionsBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 
@@ -21,15 +23,15 @@ class Plugin implements BundlePluginInterface, ConfigPluginInterface
     /**
      * {@inheritdoc}
      */
-    public function getBundles(ParserInterface $parser)
+    public function getBundles(ParserInterface $parser): array
     {
         $loadAfter = [
             'isotope',
             ContaoCoreBundle::class,
         ];
 
-        if (class_exists('HeimrichHannot\IsotopeExtensionBundle\HeimrichHannotIsotopeExtensionBundle')) {
-            $loadAfter[] = \HeimrichHannot\IsotopeExtensionBundle\HeimrichHannotIsotopeExtensionBundle::class;
+        if (class_exists(HeimrichHannotIsotopeExtensionBundle::class)) {
+            $loadAfter[] = HeimrichHannotIsotopeExtensionBundle::class;
         }
 
         return [
@@ -37,8 +39,11 @@ class Plugin implements BundlePluginInterface, ConfigPluginInterface
         ];
     }
 
-    public function registerContainerConfiguration(LoaderInterface $loader, array $managerConfig)
+    /**
+     * @throws Exception
+     */
+    public function registerContainerConfiguration(LoaderInterface $loader, array $managerConfig): void
     {
-        $loader->load('@HeimrichHannotIsotopeSubscriptionsBundle/Resources/config/services.yml');
+        $loader->load('@HeimrichHannotIsotopeSubscriptionsBundle/config/services.yaml');
     }
 }

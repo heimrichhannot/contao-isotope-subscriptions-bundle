@@ -10,58 +10,54 @@ namespace HeimrichHannot\IsotopeSubscriptionsBundle\Manager;
 
 use Contao\Config;
 use Contao\Controller;
+use Contao\Model;
 use Contao\Module;
+use Contao\ModuleModel;
+use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
+use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionArchiveModel;
 use HeimrichHannot\IsotopeSubscriptionsBundle\Model\SubscriptionModel;
-use HeimrichHannot\RequestBundle\Component\HttpFoundation\Request;
-use HeimrichHannot\UtilsBundle\Arrays\ArrayUtil;
-use HeimrichHannot\UtilsBundle\Model\ModelUtil;
-use HeimrichHannot\UtilsBundle\Url\UrlUtil;
+use HeimrichHannot\UtilsBundle\Util\Utils;
 use Isotope\Model\ProductCollection\Order;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class SubscriptionManager
 {
-    protected ModelUtil        $modelUtil;
-    protected SessionInterface $session;
-    protected Request          $request;
-    protected ArrayUtil        $arrayUtil;
-    protected UrlUtil          $urlUtil;
+    protected RequestStack     $requestStack;
+    protected Utils            $utils;
 
-    public function __construct(SessionInterface $session,
-        Request $request,
-        ModelUtil $modelUtil,
-        ArrayUtil $arrayUtil,
-        UrlUtil $urlUtil
+    public function __construct(
+        RequestStack $requestStack,
+        Utils $utils
     ) {
-        $this->modelUtil = $modelUtil;
-        $this->session = $session;
-        $this->request = $request;
-        $this->arrayUtil = $arrayUtil;
-        $this->urlUtil = $urlUtil;
+        $this->requestStack = $requestStack;
+        $this->utils = $utils;
     }
 
     public function setCheckoutModuleIdSubscriptions(Order $order, Module $module)
     {
-        $this->session->set('isotopeCheckoutModuleIdSubscriptions', $module->id);
+        $session = $this->requestStack->getSession();
+        $session->set('isotopeCheckoutModuleIdSubscriptions', $module->id);
     }
 
     /**
      * @return bool
      */
-    public function checkForExistingSubscription(Order $order, Module $module)
+    public function checkForExistingSubscription(Order $order, Module $module): bool
     {
         $email = $order->getBillingAddress()->email;
 
         $items = $order->getItems();
 
-        foreach ($items as $item) {
+        foreach ($items as $item)
+        {
             $config = null;
 
-            switch ($module->iso_direct_checkout_product_mode) {
+            switch ($module->iso_direct_checkout_product_mode)
+            {
                 case 'product_type':
-                    $product = $this->modelUtil->findModelInstanceByPk('tl_iso_product', $item->product_id);
+                    $product = $this->utils->model()->findModelInstanceByPk('tl_iso_product', $item->product_id);
 
                     if (null === $product) {
                         continue 2;
@@ -89,16 +85,36 @@ class SubscriptionManager
                     break;
             }
 
-            if (null !== $config && (!$config['iso_addSubscriptionCheckbox'] || $this->request->getPost('subscribeToProduct_'.$item->product_id)) &&
-                $config['iso_addSubscription'] && $config['iso_subscriptionArchive']
-                && null !== ($archive = $this->modelUtil->findModelInstanceByPk('tl_iso_subscription_archive', $config['iso_subscriptionArchive']))) {
-                if (null !== $this->modelUtil->findModelInstancesBy('tl_iso_subscription', [
-                    'tl_iso_subscription.email=?', 'tl_iso_subscription.pid=?', 'tl_iso_subscription.disable!=?',
-                    ], [$email, $archive->id, 1])) {
-                    $_SESSION['ISO_ERROR'][] = sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionAlreadyExists'], $email, $item->name);
+            if ($config === null) {
+                continue;
+            }
 
-                    return false;
-                }
+            if ($config['iso_addSubscriptionCheckbox'] ?? false and !$this->requestStack->getCurrentRequest()->getPost('subscribeToProduct_' . $item->product_id)) {
+                continue;
+            }
+
+            if (!($config['iso_addSubscription'] ?? false)) {
+                continue;
+            }
+
+            if (!($archiveId = $config['iso_subscriptionArchive'] ?? 0)) {
+                continue;
+            }
+
+            $archive = SubscriptionArchiveModel::findByPk($archiveId);
+
+            if ($archive === null) {
+                continue;
+            }
+
+            $subscription = SubscriptionModel::findBy(
+                ['tl_iso_subscription.email=?', 'tl_iso_subscription.pid=?', 'tl_iso_subscription.disable!=?'],
+                [$email, $archive->id, 1]
+            );
+
+            if ($subscription !== null) {
+                $_SESSION['ISO_ERROR'][] = \sprintf($GLOBALS['TL_LANG']['MSC']['iso_subscriptionAlreadyExists'], $email, $item->name);
+                return false;
             }
         }
 
@@ -108,26 +124,35 @@ class SubscriptionManager
     /**
      * @return bool
      */
-    public function addSubscriptions(Order $order, array $tokens)
+    public function addSubscriptions(Order $order, array $tokens): bool
     {
         $email = $order->getBillingAddress()->email;
         $address = $order->getShippingAddress() ?: $order->getBillingAddress();
         $items = $order->getItems();
 
-        if (!($module = $this->session->get('isotopeCheckoutModuleIdSubscriptions'))) {
+        $request = $this->requestStack->getCurrentRequest();
+        $session = $this->requestStack->getSession();
+
+        if (!($moduleId = $session->get('isotopeCheckoutModuleIdSubscriptions'))) {
             return true;
         }
 
-        $this->session->remove('isotopeCheckoutModuleIdSubscriptions');
+        $session->remove('isotopeCheckoutModuleIdSubscriptions');
 
-        $module = $this->modelUtil->findModelInstanceByPk('tl_module', $module);
+        $module = ModuleModel::findByPk($moduleId);
 
-        foreach ($items as $item) {
+        if (null === $module) {
+            return true;
+        }
+
+        foreach ($items as $item)
+        {
             $config = null;
 
-            switch ($module->iso_direct_checkout_product_mode) {
+            switch ($module->iso_direct_checkout_product_mode)
+            {
                 case 'product_type':
-                    $product = $this->modelUtil->findModelInstanceByPk('tl_iso_product', $item->product_id);
+                    $product = $this->utils->model()->findModelInstanceByPk('tl_iso_product', $item->product_id);
 
                     if (null === $product) {
                         continue 2;
@@ -155,53 +180,74 @@ class SubscriptionManager
                     break;
             }
 
-            if (null !== $config && $config['iso_addSubscription']) {
-                if ($config['iso_subscriptionArchive'] && (!$config['iso_addSubscriptionCheckbox'] || $this->request->getPost('subscribeToProduct_'.$item->product_id))) {
-                    $subscription = $this->modelUtil->findOneModelInstanceBy('tl_iso_subscription', [
-                            'tl_iso_subscription.email=?', 'tl_iso_subscription.pid=?', 'activation!=?', 'tl_iso_subscription.disable=?',
-                        ], [$email, $config['iso_subscriptionArchive'], '', 1]);
+            if (null === $config || !($config['iso_addSubscription'] ?? false)) {
+                continue;
+            }
 
-                    if (!$subscription) {
-                        $subscription = new SubscriptionModel();
-                    }
+            if (!($archiveId = $config['iso_subscriptionArchive'] ?? 0)) {
+                continue;
+            }
 
-                    if ($config['iso_addActivation']) {
-                        $strToken = md5(uniqid(mt_rand(), true));
+            if (($config['iso_addSubscriptionCheckbox'] ?? false) && !$request->getPost('subscribeToProduct_'.$item->product_id)) {
+                continue;
+            }
 
-                        $subscription->disable = true;
-                        $subscription->activation = $strToken;
+            $subscription = $this->utils->model()->findOneModelInstanceBy('tl_iso_subscription', [
+                'tl_iso_subscription.email=?',
+                'tl_iso_subscription.pid=?',
+                'activation!=?',
+                'tl_iso_subscription.disable=?',
+            ], [$email, $archiveId, '', 1]);
 
-                        if (null !== ($notification = $this->modelUtil->findModelInstanceByPk('tl_nc_notification', $config['iso_activationNotification']))) {
-                            if ($config['iso_activationJumpTo']
-                                && null !== ($objPageRedirect = $this->modelUtil->callModelMethod('tl_page', 'findPublishedById', $config['iso_activationJumpTo']))) {
-                                $tokens['link'] = $this->urlUtil->addQueryString('token='.$strToken, $objPageRedirect->getAbsoluteUrl());
-                            }
+            if (!$subscription) {
+                $subscription = new SubscriptionModel();
+            }
 
-                            $notification->send($tokens, $GLOBALS['TL_LANGUAGE']);
+            if ($config['iso_addActivation'] ?? false)
+            {
+                $strToken = md5(uniqid(mt_rand(), true));
+
+                $subscription->disable = true;
+                $subscription->activation = $strToken;
+
+                $notification = $this->utils->model()->findModelInstanceByPk('tl_nc_notification', $config['iso_activationNotification']);
+
+                if ($subscription !== null)
+                {
+                    if ($isoActivationJumpTo = $config['iso_activationJumpTo'] ?? 0)
+                    {
+                        /** @var class-string<PageModel> $pageModel */
+                        $pageModel = Model::getClassFromTable('tl_page');
+                        $objPageRedirect = $pageModel::findPublishedById($isoActivationJumpTo);
+                        if ($objPageRedirect !== null)
+                        {
+                            $tokens['link'] = $this->utils->url()->addQueryStringParameterToUrl('token='.$strToken, $objPageRedirect->getAbsoluteUrl());
                         }
                     }
 
-                    $addressFields = Config::get('iso_addressFields');
-
-                    if (null === $addressFields) {
-                        $addressFields = serialize(array_keys($this->getIsotopeAddressFields()));
-                    }
-
-                    foreach (StringUtil::deserialize($addressFields, true) as $strName) {
-                        $subscription->{$strName} = $address->{$strName};
-                    }
-
-                    $subscription->email = $email;
-                    $subscription->pid = $config['iso_subscriptionArchive'];
-                    $subscription->tstamp = $subscription->dateAdded = time();
-                    $subscription->quantity = $this->request->getPost('quantity_'.$item->product_id);
-                    $subscription->order_id = $order->id;
-
-                    $subscription->save();
-
-                    $this->addPrivacyProtocolEntry((int) $config['iso_privacyEntryConfig'], $module, $subscription->row());
+                    $notification->send($tokens, $GLOBALS['TL_LANGUAGE']);
                 }
             }
+
+            $addressFields = Config::get('iso_addressFields');
+
+            if (null === $addressFields) {
+                $addressFields = serialize(array_keys($this->getIsotopeAddressFields()));
+            }
+
+            foreach (StringUtil::deserialize($addressFields, true) as $strName) {
+                $subscription->{$strName} = $address->{$strName};
+            }
+
+            $subscription->email = $email;
+            $subscription->pid = $config['iso_subscriptionArchive'];
+            $subscription->tstamp = $subscription->dateAdded = time();
+            $subscription->quantity = $this->requestStack->getCurrentRequest()->getPost('quantity_'.$item->product_id);
+            $subscription->order_id = $order->id;
+
+            $subscription->save();
+
+            $this->addPrivacyProtocolEntry((int) $config['iso_privacyEntryConfig'], $module, $subscription->row());
         }
 
         return true;
@@ -210,7 +256,7 @@ class SubscriptionManager
     /**
      * @return array
      */
-    public function getIsotopeAddressFields()
+    public function getIsotopeAddressFields(): array
     {
         Controller::loadDataContainer('tl_iso_address');
         System::loadLanguageFile('tl_iso_address');
@@ -260,7 +306,9 @@ class SubscriptionManager
             }
         }
 
-        $this->arrayUtil->insertInArrayByName($arrDca['fields'], 'tstamp', $arrFields, 1);
+        if (($intIndex = \array_search('tstamp', \array_keys($arrDca['fields']))) !== false) {
+            \Contao\ArrayUtil::arrayInsert($arrDca['fields'], $intIndex + 1, $arrFields);
+        }
 
         // palette
         $strInitialPalette = $arrDca['palettes']['default'];

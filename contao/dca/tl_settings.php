@@ -1,5 +1,7 @@
 <?php
 
+use HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager;
+
 $dca = &$GLOBALS['TL_DCA']['tl_settings'];
 
 /**
@@ -18,10 +20,10 @@ $dca['subpalettes']['iso_changeMandatoryAddressFields'] = 'iso_mandatoryAddressF
  * Fields
  */
 $fields = [
-    'iso_addressFields'                => [
+    'iso_addressFields' => [
         'exclude'          => true,
         'inputType'        => 'checkbox',
-        'options_callback' => [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'getIsotopeAddressFields'],
+        'options_callback' => [SubscriptionManager::class, 'getIsotopeAddressFields'],
         'eval'             => ['multiple' => true, 'tl_class' => 'w50 clr'],
     ],
     'iso_changeMandatoryAddressFields' => [
@@ -29,10 +31,10 @@ $fields = [
         'inputType' => 'checkbox',
         'eval'      => ['tl_class' => 'w50', 'submitOnChange' => true],
     ],
-    'iso_mandatoryAddressFields'       => [
+    'iso_mandatoryAddressFields' => [
         'exclude'          => true,
         'inputType'        => 'checkbox',
-        'options_callback' => [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'getIsotopeAddressFields'],
+        'options_callback' => [SubscriptionManager::class, 'getIsotopeAddressFields'],
         'eval'             => ['multiple' => true, 'tl_class' => 'w50 clr'],
     ]
 ];
