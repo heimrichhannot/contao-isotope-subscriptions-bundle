@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.1] - 2024-08-01
+- Fixed: symfony services not loading
+
 ## [2.2.0] - 2024-07-17
 - Added: Utils v3 support
 - Fixed: Issues with Contao 4.13
