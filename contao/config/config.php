@@ -3,6 +3,9 @@
 /**
  * Backend modules
  */
+
+use HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager;
+
 \Contao\System::getContainer()->get(\HeimrichHannot\UtilsBundle\Arrays\ArrayUtil::class)->insertInArrayByName(
     $GLOBALS['BE_MOD']['isotope'], 'iso_products', [
     'iso_subscriptions' => [
@@ -14,12 +17,9 @@
 /**
  * Isotope hooks
  */
-$GLOBALS['ISO_HOOKS']['preCheckout']['setCheckoutModuleIdSubscriptions']        =
-    [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'setCheckoutModuleIdSubscriptions'];
-$GLOBALS['ISO_HOOKS']['preCheckout']['checkForExistingSubscription']            =
-    [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'checkForExistingSubscription'];
-$GLOBALS['ISO_HOOKS']['postCheckout']['addSubscriptions']                       =
-    [\HeimrichHannot\IsotopeSubscriptionsBundle\Manager\SubscriptionManager::class, 'addSubscriptions'];
+$GLOBALS['ISO_HOOKS']['preCheckout']['setCheckoutModuleIdSubscriptions'] = [SubscriptionManager::class, 'setCheckoutModuleIdSubscriptions'];
+$GLOBALS['ISO_HOOKS']['preCheckout']['checkForExistingSubscription'] = [SubscriptionManager::class, 'checkForExistingSubscription'];
+$GLOBALS['ISO_HOOKS']['postCheckout']['addSubscriptions'] = [SubscriptionManager::class, 'addSubscriptions'];
 
 /**
  * Notification center notification types
